@@ -274,7 +274,7 @@ def custom_data(payload):
             out = {'connectgaps': False, 'name': sensor+' '+val_type, 'type': 'line', 'x': '', 'y': '', 'yaxis': 'y2'}
         if (val_type == 'pid') or (val_type == 'humidity'):
             if not hundreds:
-                layout.update({'yaxis3': {'title': 'Percent', 'overlaying': 'y', 'side': 'right'}})
+                layout.update({'yaxis3': {'title': 'Percent', 'overlaying': 'y', 'side': 'right', 'anchor': 'free', 'position': 0.85}}) 
             hundreds = True
             out = {'connectgaps': False, 'name': sensor+' '+val_type, 'type': 'line', 'x': '', 'y': '', 'yaxis': 'y3'}
         if (val_type == 'temp'):
