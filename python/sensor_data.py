@@ -73,6 +73,7 @@ def setup_RP(meas):
         print "Failed to create CQs for "+meas+", as it already exists"
 
 def write_data(json):
+    print json
     # ensure RP's and CQ's in place for new sites
     global measurement
     if json['type'] not in measurement:

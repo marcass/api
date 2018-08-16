@@ -18,7 +18,7 @@ def update_data():
     Writes data to influx from remote sensor
     '''
     # print request.headers
-    allowed = ['sensor']
+    allowed = ['sensor', 'python']
     if get_jwt_claims()['role'] in allowed:
         content = request.get_json(silent=False)
         # print content
