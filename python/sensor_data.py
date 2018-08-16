@@ -38,6 +38,7 @@ durations = {'24_hours': {'dur':'1d', 'default':True},
              '5_years': {'dur':'260w','default':False}}
 # orgainse graphing periods
 periods = {'hours': ['24_hours'], 'days': ['7_days', '2_months'], 'months': ['1_year'], 'years': ['5_years']}
+# def setup_RP():
 def setup_RP(meas):
     global retention_policies
     global measurement
@@ -63,6 +64,11 @@ def setup_RP(meas):
         # client.query('CREATE CONTINUOUS QUERY \"%s\" ON %s BEGIN SELECT mean(temp) AS "temp", mean(humidity) AS "humidity", mean(light) AS "light" INTO \"%s\".values_2mo FROM \"%s\" GROUP BY time(10m), * END' %(meas+'_cq_2_months', db_name, meas+'_2_months', meas))
         # client.query('CREATE CONTINUOUS QUERY \"%s\" ON %s BEGIN SELECT mean(temp) AS "temp", mean(humidity) AS "humidity", mean(light) AS "light" INTO \"%s\".values_1y FROM \"%s\" GROUP BY time(20m), * END' %(meas+'_cq_1_year', db_name, meas+'_1_year', meas))
         # client.query('CREATE CONTINUOUS QUERY \"%s\" ON %s BEGIN SELECT mean(temp) AS "temp", mean(humidity) AS "humidity", mean(light) AS "light" INTO \"%s\".values_5y FROM \"%s\" GROUP BY time(30m), * END' %(meas+'_cq_5_years', db_name, meas+'_5_years', meas))
+        # client.query('CREATE CONTINUOUS QUERY \"%s\" ON %s BEGIN SELECT mean(%s) AS \"%s\" INTO "7_days".%s FROM "24_hours".\"%s\" GROUP BY time(5m), * END' %(meas+'_cq_7_days', db_name, meas, meas, meas, meas))
+        # client.query('CREATE CONTINUOUS QUERY \"%s\" ON %s BEGIN SELECT mean(%s) AS \"%s\" INTO "2_months".%s FROM "24_hours".\"%s\" GROUP BY time(10m), * END' %(meas+'_cq_2_months', db_name, meas, meas, meas, meas))
+        # client.query('CREATE CONTINUOUS QUERY \"%s\" ON %s BEGIN SELECT mean(%s) AS \"%s\" INTO "1_year".%s FROM "24_hours".\"%s\" GROUP BY time(20m), * END' %(meas+'_cq_1_year', db_name, meas, meas, meas, meas))
+        # client.query('CREATE CONTINUOUS QUERY \"%s\" ON %s BEGIN SELECT mean(%s) AS \"%s\" INTO "5_years".%s FROM "24_hours".\"%s\" GROUP BY time(30m), * END' %(meas+'_cq_5_years', db_name, meas, meas, meas, meas))
+        # print 'making cqs for '+meas
         client.query('CREATE CONTINUOUS QUERY \"%s\" ON %s BEGIN SELECT mean(%s) AS \"%s\" INTO "7_days".%s FROM "24_hours".\"%s\" GROUP BY time(5m), * END' %(meas+'_cq_7_days', db_name, meas, meas, meas, meas))
         client.query('CREATE CONTINUOUS QUERY \"%s\" ON %s BEGIN SELECT mean(%s) AS \"%s\" INTO "2_months".%s FROM "24_hours".\"%s\" GROUP BY time(10m), * END' %(meas+'_cq_2_months', db_name, meas, meas, meas, meas))
         client.query('CREATE CONTINUOUS QUERY \"%s\" ON %s BEGIN SELECT mean(%s) AS \"%s\" INTO "1_year".%s FROM "24_hours".\"%s\" GROUP BY time(20m), * END' %(meas+'_cq_1_year', db_name, meas, meas, meas, meas))
@@ -70,74 +76,75 @@ def setup_RP(meas):
         print 'making cqs for '+meas
     except:
         # already exist
-        print "Failed to create CQs for "+meas+", as it already exists"
+        print "Failed to create CQs, as they already exist"
+
+# setup_RP()
 
 def write_data(json):
     print json
     # ensure RP's and CQ's in place for new sites
-    global measurement
-    if json['type'] not in measurement:
-        measurement.append(json['type'])
+    # global measurement
+    if json['type'] not in get_sensor_types():
         setup_RP(json['type'])
+    sensType = json['type']
+    val = json['value']
+    # influx is fropping values if the arrive as truncated floates (eg 16.00 is sent as 16
+    # and influx drops point as it won't stuff an int into a float column)
+    if (sensType == 'temp') or (sensType == 'humidity'):
+        val = float(json['value'])
+    # try:
+    # json_data = [
+    #     {
+    #         'measurement': json['type'],
+    #         'tags': {
+    #             'sensorID': json['sensor'],
+    #             'site': json['group'],
+    #             'type': json['type']
+    #         },
+    #         'fields': {
+    #             json['type']: val
+    #         },
+    #         'time': datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+    #         }
+    #     ]
     try:
-        json_data = [
-            {
-                'measurement': json['type'],
-                'tags': {
-                    'sensorID': json['sensor'],
-                    'site': json['group'],
-                    'type': json['type']
-                },
-                'fields': {
-                    json['type']: json['value']
-                },
-                'time': datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-                }
-            ]
-        client.write_points(json_data)
-        return {'Status': 'success', 'Message': 'successfully wrote data points'}
+        measurement = json['measurement']
     except:
-        return {'Status': 'error', 'Messgage': 'failed to wrote data points'}
+        # default measuremtn for esp sensors
+        measurement = 'things'
+    json_data = [
+        {
+            'measurement': measurement,
+            'tags': {
+                'sensorID': json['sensor'],
+                'site': json['group'],
+                'type': json['type']
+            },
+            'fields': {
+                json['type']: val
+            },
+            'time': datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+            }
+        ]
+    client.write_points(json_data)
+    get_sensor_types()
+    return {'Status': 'success', 'Message': 'successfully wrote data points'}
+    # except:
+    #     return {'Status': 'error', 'Messgage': 'failed to write data points'}
 
-# def get_sensorIDs():
-#     measurements = get_measurements()
-#     meas = []
-#     sites = []
-#     for i in measurements:
-#         # print i
-#         if i not in meas:
-#             meas.append(i)
-#         results = client.query('SHOW TAG VALUES ON "sensors" FROM \"%s\" WITH KEY = site' %(i))
-#         # SHOW TAG VALUES on sensors with key= sensorID where "site" = 'marcus'
-#         meas_types = results.get_points()
-#         for a in meas_types:
-#             print i
-#             sens = client.query('SHOW TAG VALUES ON "sensors" WITH KEY = sensorID WHERE "site" = \'%s\' AND "type" = \'%s\'' %(a['value'], i))
-#             # print 'meas_types item = ' +str(a)
-#             sens_res = sens.get_points()
-#             sens_list = []
-#             for c in sens_res:
-#                 sens_list.append(c['value'])
-#                 # print 'sensors for '+a['value'] +' are: ' +str(c)
-#             type_dict = {i:sens_list}
-#             final = {'site': a['value'], 'types': []}
-#             print a['value'] + ' types are '+str(type_dict)
-#             if a['value'] not in sites:
-#                 sites.append(a['value'])
-#         # print 'sites list ='
-#         # print sites
-#         # for x in sites:
-#         #     sensorIDs = sens.get_points(tags={'site': x})
-#         #     for b in sensorIDs:
-#         #         print 'sensor id is: '+str(b)
-#         # print 'sensors list ='
-#         # print meas
-#         res = {}
-#     ret = {'sites': sites, 'julian': {'temp': ['hall', 'lounge'], 'light': ['hall']}, 'marcus': 'etc'}
+def get_sensor_types():
+    results = client.query('SHOW FIELD KEYS ON "sensors" FROM "things"')
+    types = results.get_points()
+    types_list = []
+    for i in types:
+        if i not in types_list:
+            types_list.append(i['fieldKey'])
+    return types_list
+
 def get_sensorIDs(site):
-    measurements = get_measurements()
+    types = get_sensor_types()
     ret = {'site': site, 'types': [], 'traces': []}
-    for i in measurements:
+    for i in types:
         # print i
         sens = client.query('SHOW TAG VALUES ON "sensors" WITH KEY = sensorID WHERE "site" = \'%s\' AND "type" = \'%s\'' %(site, i))
         sens_res = sens.get_points()
@@ -148,60 +155,8 @@ def get_sensorIDs(site):
             # print c
             sens_list = {'name': i, 'sensor': c['value']}
             ret['traces'].append(sens_list)
-            # print 'sensors for '+a['value'] +' are: ' +str(c)
-        # type_dict = {i:sens_list}
-        # ret['traces'].append(sens_list)
     print ret
-    # clean_list = []
-    # for x in ret['traces']:
-    #     # print x
-    #     if x['sensors'] != []:
-    #         clean_list.append(x)
-    # ret['traces'] = clean_list
-    # print ret
     return ret
-        # print a['value'] + ' types are '+str(type_dict)
-        # print 'sites list ='
-        # print sites
-        # for x in sites:
-        #     sensorIDs = sens.get_points(tags={'site': x})
-        #     for b in sensorIDs:
-        #         print 'sensor id is: '+str(b)
-        # print 'sensors list ='
-        # print meas
-    #     res = {}
-    # ret = {'sites': sites, 'julian': {'temp': ['hall', 'lounge'], 'light': ['hall']}, 'marcus': 'etc'}
-
-
-# def get_sensorIDs1():
-#     global sites
-#     ret = []
-#     for a in sites:
-#         print a
-#         res_dict = {'site': a, 'location': []}
-#         # results = client.query('SHOW TAG VALUES ON "sensors" WITH KEY = sensorID')
-#         # results = client.query('SHOW TAG VALUES ON "sensors" WITH KEY = sensorID WHERE "group" = \"%s\"' %(location))
-#         results = client.query('SHOW TAG VALUES ON "sensors" FROM \"%s\" WITH KEY = sensorID' %(a))
-#         locations = results.get_points()
-#         # ids = []
-#         # ret.append(res_dict)
-#         for i in locations:
-#             # this_dict = {'id': i['value'], 'fields': []}
-#             this_res = client.query('SHOW FIELD KEYS ON "sensors" FROM \"%s\"' %(a))
-#             sensors = this_res.get_points()
-#             fields = [x['fieldKey'] for x in sensors]
-#             this_dict = {'id': i['value'], 'fields': fields}
-#             # for x in sensors:
-#             #     fields =
-#             #     this_dict['fields'].append(x['fieldKey'])
-#             # ids.append(i['value'])
-#             res_dict['location'].append(this_dict)
-#         ret.append(res_dict)
-#     print ret
-#     # [{site: marcus, locatons: [{id: lounge, fields: []}, {id: kitchen, fields: []}]
-#     # returns:
-#     # [{'site': 'marcus', 'location': [{'fields': [u'light', u'temp'], 'id': u'downhall'}, {'fields': [u'light', u'temp'], 'id': u'kitchen'}, {'fields': [u'light', u'temp'], 'id': u'lounge'}, {'fields': [u'light', u'temp'], 'id': u'spare'}, {'fields': [u'light', u'temp'], 'id': u'window'}]}]
-#     return ret
 
 def get_measurements():
     results = client.query('SHOW MEASUREMENTS ON "sensors"')
@@ -237,8 +192,8 @@ def custom_data(payload):
     except:
         timestamp = (datetime.datetime.utcnow() - datetime.timedelta(hours=1)).strftime("%Y-%m-%dT%H:%M:%S.%f000Z")
     res = []
-    colours = ['red', 'blue', 'green', 'black', 'yellow', 'orange']
-    count = 0
+    # colours = ['red', 'blue', 'green', 'black', 'yellow', 'orange']
+    # count = 0
     thousands = False
     hundreds = False
     tens = False
@@ -248,26 +203,12 @@ def custom_data(payload):
     layout = {'title': 'House data'}
     for i in payload['traces']:
         val_type, sensor = i.split('+')
-        # this is too slow, need to rearrange db so meaurements are site based, rather than type based
-        results = client.query('SELECT * FROM \"%s\".%s WHERE time > \'%s\'' %(payload['range'], val_type, timestamp))
-        dat = results.get_points(tags={'sensorID':sensor})
+        # results = client.query('SELECT * FROM \"%s\".%s WHERE time > now() - \'%s\'' %(payload['range'], val_type, timestamp))
+        results = client.query('SELECT * FROM \"%s\"."things" WHERE time > now() - \'%s\' AND "type" = \"%s\" AND "sensorID" = \"%s\"' %(payload['range'], timestamp, val_type, sensor))
+        # dat = results.get_points(tags={'sensorID':sensor})
+        dat = results.get_points()
         times = []
         values = []
-        # if (val_type == 'light'):
-        #     if not thousands:
-        #         layout.update({'yaxis2': {'title': 'Light', 'overlaying': 'y', 'side': 'right'}})
-        #     thousands = True
-        #     out = {'connectgaps': False,'marker': {'color': '', 'size': '10'}, 'name': sensor+' '+val_type, 'type': 'line', 'x': '', 'y': '', 'yaxis': 'y2'}
-        # if (val_type == 'pid') or (val_type == 'humidity'):
-        #     if not hundreds:
-        #         layout.update({'yaxis3': {'title': 'Percent', 'overlaying': 'y', 'side': 'right'}})
-        #     hundreds = True
-        #     out = {'connectgaps': False, 'marker': {'color': '', 'size': '10'}, 'name': sensor+' '+val_type, 'type': 'line', 'x': '', 'y': '', 'yaxis': 'y3'}
-        # if (val_type == 'temp'):
-        #     if not tens:
-        #         layout.update({'yaxis':{'title': 'Temperature'}})
-        #     tens = True
-        #     out = {'connectgaps': False, 'marker': {'color': '', 'size': '10'}, 'name': sensor+' '+val_type, 'type': 'line', 'x': '', 'y': ''}
         if (val_type == 'light'):
             if not thousands:
                 layout.update({'yaxis2': {'title': 'Light', 'overlaying': 'y', 'side': 'right'}})
@@ -275,7 +216,7 @@ def custom_data(payload):
             out = {'connectgaps': False, 'name': sensor+' '+val_type, 'type': 'line', 'x': '', 'y': '', 'yaxis': 'y2'}
         if (val_type == 'pid') or (val_type == 'humidity'):
             if not hundreds:
-                layout.update({'yaxis3': {'title': 'Percent', 'overlaying': 'y', 'side': 'right', 'anchor': 'free', 'position': 0.85}}) 
+                layout.update({'yaxis3': {'title': 'Percent', 'overlaying': 'y', 'side': 'right', 'anchor': 'free', 'position': 0.85}})
             hundreds = True
             out = {'connectgaps': False, 'name': sensor+' '+val_type, 'type': 'line', 'x': '', 'y': '', 'yaxis': 'y3'}
         if (val_type == 'temp'):
@@ -288,8 +229,8 @@ def custom_data(payload):
             values.append(a[val_type])
         out['x'] = times
         out['y'] = values
-        out['colour'] = colours[count]
-        count += 1
+        # out['colour'] = colours[count]
+        # count += 1
         res.append(out)
     final_res = {'layout':layout, 'data': res}
     # print final_res
@@ -312,10 +253,10 @@ def start_data(payload):
     # target = payload["range"]+"."+q_dict[payload["range"]]["rp_val"]
     # print target
     res = []
-    colours = ['red', 'blue', 'green', 'black', 'yellow', 'orange']
-    count = 0
+    # colours = ['red', 'blue', 'green', 'black', 'yellow', 'orange']
+    # count = 0
     # results = client.query('SELECT * FROM "24_hours".marcus WHERE time > \'%s\'' %(timestamp))
-    results = client.query('SELECT * FROM "7_days".temp WHERE time > \'%s\'' %(timestamp))
+    results = client.query('SELECT * FROM "7_days".temp WHERE time > now() - \'%s\'' %(timestamp))
     # results = client.query('SELECT * FROM \"%s\".%s WHERE time > \'%s\'' %(payload['range'], q_dict[payload['range']['rp_val']], timestamp))
     # print results.raw
     for x in payload['measurement']:
@@ -336,7 +277,7 @@ def start_data(payload):
                 times.append(a['time'])
                 values.append(a[i['type']])
             # out['colour'] = colours[count]
-            count += 1
+            # count += 1
             out['x'] = times
             out['y'] = values
             # print times
