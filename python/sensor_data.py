@@ -141,20 +141,23 @@ def get_sensor_types():
             types_list.append(i['fieldKey'])
     return types_list
 
-def get_sensorIDs(site):
+def get_sensorIDs(sites):
+    # site is a list of sites
     types = get_sensor_types()
-    ret = {'site': site, 'types': [], 'traces': []}
+    # ret = {'site': site, 'types': [], 'traces': []}
     for i in types:
-        # print i
-        sens = client.query('SHOW TAG VALUES ON "sensors" WITH KEY = sensorID WHERE "site" = \'%s\' AND "type" = \'%s\'' %(site, i))
-        sens_res = sens.get_points()
-        for c in sens_res:
-            if c:
-                if i not in ret['types']:
-                    ret['types'].append(i)
-            # print c
-            sens_list = {'name': i, 'sensor': c['value']}
-            ret['traces'].append(sens_list)
+        ret = {'site': '', 'types': [], 'traces': []}
+        for a in sites:
+            ret['site'] = a
+            sens = client.query('SHOW TAG VALUES ON "sensors" WITH KEY = sensorID WHERE "site" = \'%s\' AND "type" = \'%s\'' %(a, i))
+            sens_res = sens.get_points()
+            for c in sens_res:
+                if c:
+                    if i not in ret['types']:
+                        ret['types'].append(i)
+                # print c
+                sens_list = {'name': i, 'sensor': c['value']}
+                ret['traces'].append(sens_list)
     print ret
     return ret
 
@@ -167,17 +170,14 @@ def get_measurements():
     return types
 
 def get_sites():
-    measurements = get_measurements()
-    meas = []
     sites = []
-    for i in measurements:
-        results = client.query('SHOW TAG VALUES ON "sensors" FROM \"%s\" WITH KEY = site' %(i))
-        # SHOW TAG VALUES on sensors with key= sensorID where "site" = 'marcus'
-        meas_types = results.get_points()
-        # sites = np.unique[a['value'] for a in meas_types]
-        for a in meas_types:
-            if a['value'] not in sites:
-                sites.append(a['value'])
+    results = client.query('SHOW TAG VALUES ON "sensors" WITH KEY = site')
+    # SHOW TAG VALUES on sensors with key= sensorID where "site" = 'marcus'
+    meas_types = results.get_points()
+    # sites = np.unique[a['value'] for a in meas_types]
+    for a in meas_types:
+        if a['value'] not in sites:
+            sites.append(a['value'])
     # print sites
     return sites
 
