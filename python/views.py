@@ -59,6 +59,7 @@ import sys
 import paho.mqtt.publish as publish
 import re
 import sql
+import creds
 from flask import Flask, request, jsonify
 # from flask_cors import CORS
 # from flask_jwt_extended import JWTManager
@@ -296,7 +297,6 @@ def usekey():
         if d is None:
             x = sql.insert_actionLog('Pinpad', door, key)
             resp = 0
-            publish.single(topic, resp, qos=2, auth=creds.mosq_auth, hostname=creds.broker)
             # mqtt.notify_door(0, door)
         else:
             if d == 'burner':
