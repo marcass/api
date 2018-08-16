@@ -56,6 +56,7 @@
 
 #curl -X GET -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIyMGU4OTg2NS0wNjM5LTQ3ZDEtYWU0YS1hYTg4ODQxNDIwNjciLCJleHAiOjE1MDg0NTU2NDgsImZyZXNoIjpmYWxzZSwiaWF0IjoxNTA4NDU0NzQ4LCJ0eXBlIjoiYWNjZXNzIiwibmJmIjoxNTA4NDU0NzQ4LCJpZGVudGl0eSI6ImFkbWluIn0.NT7t_17Hd3hT6_uTwy5FgGSN-koq8UeybEEKaLbRjIk" http://127.0.0.1:5000/listallowed
 import sys
+import paho.mqtt.publish as publish
 import re
 import sql
 from flask import Flask, request, jsonify
@@ -280,7 +281,7 @@ def list_allowed_keys():
 @app.route("/usekey", methods=['POST',])
 @jwt_required
 def usekey():
-    allowed = ['admin', 'user']
+    allowed = ['admin', 'user', 'python']
     if get_jwt_claims()['role'] in allowed:
         try:
             content = request.get_json(silent=False)
@@ -291,19 +292,23 @@ def usekey():
         key = content['pincode']
         #use_key(pin, door)
         d = sql.validate_key(key, door)
+        topic = 'doors/response/'+door
         if d is None:
             x = sql.insert_actionLog('Pinpad', door, key)
-            resp = {'pin_correct':0}
-            mqtt.notify_door(0, door)
+            resp = 0
+            publish.single(topic, resp, qos=2, auth=creds.mosq_auth, hostname=creds.broker)
+            # mqtt.notify_door(0, door)
         else:
             if d == 'burner':
                 # print 'user tested true for burner'
                 sql.remove_disable_key(d)
             # print 'username = '+str(d)+' for '+door
             y = sql.insert_actionLog('Pinpad', door, key, d)
-            mqtt.notify_door(1, door)
-            resp = {'pin_correct':1}
-        return jsonify(resp), 200
+            # mqtt.notify_door(1, door)
+            resp = 1
+            publish.single(topic, resp, qos=2, auth=creds.mosq_auth, hostname=creds.broker)
+            # resp = {'pin_correct':1}
+        return jsonify({'pin_correct':resp}), 200
     else:
         return jsonify({"msg": "Forbidden"}), 403
 
@@ -600,7 +605,7 @@ def getLog(door):
 @app.route("/door/status", methods=['PUT',])
 @jwt_required
 def update_status():
-    allowed = ['admin','user']
+    allowed = ['python']
     if get_jwt_claims()['role'] in allowed:
         content = request.get_json(silent=False)
         return jsonify(sql.update_doorstatus(content["status"], content['door'])), 200
