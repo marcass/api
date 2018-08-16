@@ -1,11 +1,14 @@
 from flask import Flask, request, jsonify
 # from flask_cors import CORS
 # from flask_jwt_extended import JWTManager
+import creds
 import json
 import sensor_data as sensors
 from init import app, jwt
 from flask_jwt_extended import jwt_required, \
     get_jwt_identity, get_jwt_claims
+
+app.secret_key = creds.jwt_secret
 
 # Sensor data routes ####################################
 @app.route("/data", methods=['POST',])
@@ -109,3 +112,6 @@ def get_site_data(site):
         return jsonify(sensors.get_sensorIDs(site)), 200
     else:
         return jsonify({"msg": "Forbidden"}), 403
+
+if __name__ == "__main__":
+    app.run()

@@ -62,10 +62,8 @@ from flask import Flask, request, jsonify
 # from flask_cors import CORS
 # from flask_jwt_extended import JWTManager
 import json
-import mqtt
-import middleman
 import views_auth
-import boiler_data as boiler
+#import boiler_data as boiler
 import sensor_data as sensors
 from init import app, jwt
 from flask_jwt_extended import jwt_required, \

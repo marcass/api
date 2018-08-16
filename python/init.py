@@ -3,8 +3,6 @@ from flask_jwt_extended import JWTManager
 from flask_cors import CORS, cross_origin
 
 import sql
-import mqtt
-
 sql.setup_db()
 
 app = Flask(__name__)
