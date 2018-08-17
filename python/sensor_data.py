@@ -141,6 +141,25 @@ def get_sensor_types():
             types_list.append(i['fieldKey'])
     return types_list
 
+def get_type_sensors(Type):
+    results = client.query('SHOW TAG VALUES ON "sensors" WITH KEY = sensorID WHERE "type" = \"%s\"' %(Type))
+    out = results.get_points()
+    sensors_list = []
+    for i in out:
+        print i
+        if i not in sensors_list:
+            sensors_list.append(i['value'])
+    return sensors_list
+
+def get_all_sensors():
+    types = get_sensor_types()
+    sites = get_sites()
+    sensors_list = []
+    for i in sites:
+        sensors_list.append({'site': i, 'data': get_sensorIDs(i)})
+    print sensors_list
+    return sensors_list
+
 def get_sensorIDs(sites):
     # site is a list of sites
     types = get_sensor_types()
