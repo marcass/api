@@ -39,7 +39,7 @@ def get_data():
                     {'fields': [u'light', u'temp'], 'id': u'window'}]}]
     '''
     # print request.headers
-    allowed = ['admin', 'sensUser']
+    allowed = ['admin', 'sensuser']
     if get_jwt_claims()['role'] in allowed:
         return jsonify({"sensorID": sensors.get_sensorIDs(), "measurements": sensors.get_measurements()}), 200
     else:
@@ -54,7 +54,7 @@ def get_values():
     returns: traces for plotly
     '''
     # print request.headers
-    allowed = ['admin', 'sensUser']
+    allowed = ['admin', 'sensuser']
     if get_jwt_claims()['role'] in allowed:
         content = request.get_json(silent=False)
         # print 'views content is:'
@@ -72,7 +72,7 @@ def get_cust_values():
     returns: traces for plotly
     '''
     # print request.headers
-    allowed = ['admin', 'sensUser']
+    allowed = ['admin', 'sensuser']
     if get_jwt_claims()['role'] in allowed:
         content = request.get_json(silent=False)
         # print 'views content is:'
@@ -88,7 +88,7 @@ def get_sites():
     Get a list of sites
     '''
     # print request.headers
-    allowed = ['admin', 'sensUser']
+    allowed = ['admin', 'sensuser']
     if get_jwt_claims()['role'] in allowed:
         content = request.get_json(silent=False)
         # print 'views content is:'
@@ -97,46 +97,50 @@ def get_sites():
     else:
         return jsonify({"msg": "Forbidden"}), 403
 
-@app.route("/data/values/<site>", methods=['GET',])
+@app.route("/data/values/site/<site>", methods=['GET',])
 @jwt_required
 def get_site_data(site):
     '''
     Get a site data keys
     '''
     # print request.headers
-    allowed = ['admin', 'sensUser']
+    allowed = ['admin', 'sensuser']
     if get_jwt_claims()['role'] in allowed:
-        content = request.get_json(silent=False)
+        # content = request.get_json(silent=False)
         # print 'views content is:'
         # print content
         return jsonify(sensors.get_sensorIDs(site)), 200
     else:
         return jsonify({"msg": "Forbidden"}), 403
 
-@app.route("/data/values/type/<types>", methods=['GET',])
+@app.route("/data/values/type/<Type>", methods=['GET',])
 @jwt_required
-def get_type_data(type):
+def get_type_data(Type):
     '''
-    Get a type of datapoint data keys
+    Get a sensor type data keys
     '''
     # print request.headers
-    allowed = ['admin', 'sensUser']
+    allowed = ['admin', 'sensuser']
     if get_jwt_claims()['role'] in allowed:
-        # content = request.get_json(silent=False)
-        return jsonify(sensors.get_type_sensors(types)), 200
+        content = request.get_json(silent=False)
+        # print 'views content is:'
+        # print content
+        return jsonify(sensors.get_type_sensors(Type)), 200
     else:
         return jsonify({"msg": "Forbidden"}), 403
 
 @app.route("/data/values/all", methods=['GET',])
 @jwt_required
-def get_all_data():
+def get_all_sens():
     '''
-    Get a all data point info
+    Get a sensor type data keys
     '''
     # print request.headers
-    allowed = ['admin', 'sensUser']
+    allowed = ['admin', 'sensuser']
     if get_jwt_claims()['role'] in allowed:
-        # content = request.get_json(silent=False)
+        content = request.get_json(silent=False)
+        # print 'views content is:'
+        # print content
         return jsonify(sensors.get_all_sensors()), 200
     else:
         return jsonify({"msg": "Forbidden"}), 403

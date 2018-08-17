@@ -69,10 +69,10 @@ def setup_RP(meas):
         # client.query('CREATE CONTINUOUS QUERY \"%s\" ON %s BEGIN SELECT mean(%s) AS \"%s\" INTO "1_year".%s FROM "24_hours".\"%s\" GROUP BY time(20m), * END' %(meas+'_cq_1_year', db_name, meas, meas, meas, meas))
         # client.query('CREATE CONTINUOUS QUERY \"%s\" ON %s BEGIN SELECT mean(%s) AS \"%s\" INTO "5_years".%s FROM "24_hours".\"%s\" GROUP BY time(30m), * END' %(meas+'_cq_5_years', db_name, meas, meas, meas, meas))
         # print 'making cqs for '+meas
-        client.query('CREATE CONTINUOUS QUERY \"%s\" ON %s BEGIN SELECT mean(%s) AS \"%s\" INTO "7_days".%s FROM "24_hours".\"%s\" GROUP BY time(5m), * END' %(meas+'_cq_7_days', db_name, meas, meas, meas, meas))
-        client.query('CREATE CONTINUOUS QUERY \"%s\" ON %s BEGIN SELECT mean(%s) AS \"%s\" INTO "2_months".%s FROM "24_hours".\"%s\" GROUP BY time(10m), * END' %(meas+'_cq_2_months', db_name, meas, meas, meas, meas))
-        client.query('CREATE CONTINUOUS QUERY \"%s\" ON %s BEGIN SELECT mean(%s) AS \"%s\" INTO "1_year".%s FROM "24_hours".\"%s\" GROUP BY time(20m), * END' %(meas+'_cq_1_year', db_name, meas, meas, meas, meas))
-        client.query('CREATE CONTINUOUS QUERY \"%s\" ON %s BEGIN SELECT mean(%s) AS \"%s\" INTO "5_years".%s FROM "24_hours".\"%s\" GROUP BY time(30m), * END' %(meas+'_cq_5_years', db_name, meas, meas, meas, meas))
+        client.query('CREATE CONTINUOUS QUERY \"%s\" ON %s BEGIN SELECT mean(%s) AS \"%s\" INTO "7_days"."things" FROM "24_hours"."things" GROUP BY time(5m), * END' %(meas+'_cq_7_days', db_name,  meas, meas))
+        client.query('CREATE CONTINUOUS QUERY \"%s\" ON %s BEGIN SELECT mean(%s) AS \"%s\" INTO "2_months"."things" FROM "24_hours"."things" GROUP BY time(10m), * END' %(meas+'_cq_2_months', db_name,  meas, meas))
+        client.query('CREATE CONTINUOUS QUERY \"%s\" ON %s BEGIN SELECT mean(%s) AS \"%s\" INTO "1_year"."things" FROM "24_hours"."things" GROUP BY time(20m), * END' %(meas+'_cq_1_year', db_name,  meas, meas))
+        client.query('CREATE CONTINUOUS QUERY \"%s\" ON %s BEGIN SELECT mean(%s) AS \"%s\" INTO "5_years"."things" FROM "24_hours"."things" GROUP BY time(30m), * END' %(meas+'_cq_5_years', db_name,  meas, meas))
         print 'making cqs for '+meas
     except:
         # already exist
@@ -81,10 +81,9 @@ def setup_RP(meas):
 # setup_RP()
 
 def write_data(json):
-    print json
+    # print json
     # ensure RP's and CQ's in place for new sites
-    # global measurement
-    if json['type'] not in get_sensor_types():
+    if json['type'] not in get_data_types():
         setup_RP(json['type'])
     sensType = json['type']
     val = json['value']
@@ -92,47 +91,47 @@ def write_data(json):
     # and influx drops point as it won't stuff an int into a float column)
     if (sensType == 'temp') or (sensType == 'humidity'):
         val = float(json['value'])
-    # try:
-    # json_data = [
-    #     {
-    #         'measurement': json['type'],
-    #         'tags': {
-    #             'sensorID': json['sensor'],
-    #             'site': json['group'],
-    #             'type': json['type']
-    #         },
-    #         'fields': {
-    #             json['type']: val
-    #         },
-    #         'time': datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-    #         }
-    #     ]
     try:
-        measurement = json['measurement']
+        # boiler data
+        json_data = [
+            {
+                'measurement': 'things',
+                'tags': {
+                    'sensorID': json['sensor'],
+                    'site': json['group'],
+                    'type': json['type'],
+                    'state': json['state']
+                },
+                'fields': {
+                    json['type']: val
+                },
+                'time': datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+                }
+            ]
     except:
         # default measuremtn for esp sensors
         measurement = 'things'
-    json_data = [
-        {
-            'measurement': measurement,
-            'tags': {
-                'sensorID': json['sensor'],
-                'site': json['group'],
-                'type': json['type']
-            },
-            'fields': {
-                json['type']: val
-            },
-            'time': datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-            }
-        ]
+        json_data = [
+            {
+                'measurement': measurement,
+                'tags': {
+                    'sensorID': json['sensor'],
+                    'site': json['group'],
+                    'type': json['type']
+                },
+                'fields': {
+                    json['type']: val
+                },
+                'time': datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+                }
+            ]
     client.write_points(json_data)
-    get_sensor_types()
     return {'Status': 'success', 'Message': 'successfully wrote data points'}
     # except:
     #     return {'Status': 'error', 'Messgage': 'failed to write data points'}
 
-def get_sensor_types():
+def get_data_types():
+    # returnrs a list [light, etc]
     results = client.query('SHOW FIELD KEYS ON "sensors" FROM "things"')
     types = results.get_points()
     types_list = []
@@ -142,7 +141,8 @@ def get_sensor_types():
     return types_list
 
 def get_type_sensors(Type):
-    results = client.query('SHOW TAG VALUES ON "sensors" WITH KEY = sensorID WHERE "type" = \"%s\"' %(Type))
+    # returns all sensots that maesure than type (eg light)
+    results = client.query('SHOW TAG VALUES ON "sensors" WITH KEY = sensorID WHERE "type" = \'%s\'' %(Type))
     out = results.get_points()
     sensors_list = []
     for i in out:
@@ -152,33 +152,29 @@ def get_type_sensors(Type):
     return sensors_list
 
 def get_all_sensors():
-    types = get_sensor_types()
+    types = get_data_types()
     sites = get_sites()
     sensors_list = []
     for i in sites:
         sensors_list.append({'site': i, 'data': get_sensorIDs(i)})
-    print sensors_list
     return sensors_list
 
-def get_sensorIDs(sites):
-    # site is a list of sites
-    types = get_sensor_types()
-    # ret = {'site': site, 'types': [], 'traces': []}
+def get_sensorIDs(site):
+    # site is a list of sites, this returns sensor id's wiht emasurement in a site
+    types = get_data_types()
+    # result = []
+    # for x in sites:
+    # print x
+    ret = {'site': site, 'traces': []}
     for i in types:
-        ret = {'site': '', 'types': [], 'traces': []}
-        for a in sites:
-            ret['site'] = a
-            sens = client.query('SHOW TAG VALUES ON "sensors" WITH KEY = sensorID WHERE "site" = \'%s\' AND "type" = \'%s\'' %(a, i))
-            sens_res = sens.get_points()
-            for c in sens_res:
-                if c:
-                    if i not in ret['types']:
-                        ret['types'].append(i)
-                # print c
-                sens_list = {'name': i, 'sensor': c['value']}
-                ret['traces'].append(sens_list)
-    print ret
+        out = client.query('SHOW TAG VALUES ON "sensors" WITH KEY = sensorID WHERE "type" = \'%s\' AND "site" = \'%s\'' %(i, site))
+        sens_res = out.get_points()
+        for c in sens_res:
+            if c:
+                ret['traces'].append({'type': i, 'sensorID': c['value'], 'site': site})
+    # result.append(ret)
     return ret
+
 
 def get_measurements():
     results = client.query('SHOW MEASUREMENTS ON "sensors"')
@@ -221,9 +217,14 @@ def custom_data(payload):
     # setup layout of graph
     layout = {'title': 'House data'}
     for i in payload['traces']:
-        val_type, sensor = i.split('+')
+        trace = i.split('+')
+        if len(trace) > 2:
+            site, val_type, sensor = i.split('+')
+        else:
+            val_type, sensor = i.split('+')
+            site = payload['site']
         # results = client.query('SELECT * FROM \"%s\".%s WHERE time > now() - \'%s\'' %(payload['range'], val_type, timestamp))
-        results = client.query('SELECT * FROM \"%s\"."things" WHERE time > now() - \'%s\' AND "type" = \"%s\" AND "sensorID" = \"%s\"' %(payload['range'], timestamp, val_type, sensor))
+        results = client.query('SELECT * FROM \"%s\"."things" WHERE time > now() - \'%s\' AND "type" = \'%s\' AND "sensorID" = \'%s\' AND "site" = \'%s\'' %(payload['range'], timestamp, val_type, sensor, site))
         # dat = results.get_points(tags={'sensorID':sensor})
         dat = results.get_points()
         times = []
