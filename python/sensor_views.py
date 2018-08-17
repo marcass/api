@@ -81,7 +81,7 @@ def get_cust_values():
     else:
         return jsonify({"msg": "Forbidden"}), 403
 
-@app.route("/data/values", methods=['GET',])
+@app.route("/data/values/sites", methods=['GET',])
 @jwt_required
 def get_sites():
     '''
@@ -94,6 +94,19 @@ def get_sites():
         # print 'views content is:'
         # print content
         return jsonify(sensors.get_sites()), 200
+    else:
+        return jsonify({"msg": "Forbidden"}), 403
+
+@app.route("/data/values/types", methods=['GET',])
+@jwt_required
+def get_types():
+    '''
+    Get a list of types
+    '''
+    # print request.headers
+    allowed = ['admin', 'sensuser']
+    if get_jwt_claims()['role'] in allowed:
+        return jsonify(sensors.get_data_types()), 200
     else:
         return jsonify({"msg": "Forbidden"}), 403
 

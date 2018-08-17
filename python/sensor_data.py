@@ -217,12 +217,27 @@ def custom_data(payload):
     # setup layout of graph
     layout = {'title': 'House data'}
     for i in payload['traces']:
-        trace = i.split('+')
-        if len(trace) > 2:
-            site, val_type, sensor = i.split('+')
-        else:
-            val_type, sensor = i.split('+')
+        try:
+            val_type = payload['type']
+            site, sensor = i.split('+')
+        except:
+            # not type-based graph
+            pass
+        try:
             site = payload['site']
+            val_type, sensor = i.split('+')
+        except:
+            # not site-based graph
+            pass
+        try:
+            trace = i.split('+')
+            if len(trace) > 2:
+                site, val_type, sensor = i.split('+')
+            else:
+                val_type, sensor = i.split('+')
+                site = payload['site']
+        except:
+            print 'Something fucked up when getting graph'
         # results = client.query('SELECT * FROM \"%s\".%s WHERE time > now() - \'%s\'' %(payload['range'], val_type, timestamp))
         results = client.query('SELECT * FROM \"%s\"."things" WHERE time > now() - \'%s\' AND "type" = \'%s\' AND "sensorID" = \'%s\' AND "site" = \'%s\'' %(payload['range'], timestamp, val_type, sensor, site))
         # dat = results.get_points(tags={'sensorID':sensor})
