@@ -146,10 +146,16 @@ def get_type_sensors(Type):
     out = results.get_points()
     sensors_list = []
     for i in out:
-        print i
         if i not in sensors_list:
             sensors_list.append(i['value'])
-    return sensors_list
+    traces_list = []
+    for x in sensors_list:
+        results = client.query('SHOW TAG VALUES ON "sensors" WITH KEY = site WHERE "sensorID" = \'%s\'' %(x))
+        out = results.get_points()
+        for c in out:
+            traces_list.append({'site': c['value'], 'sensorID':x})
+    print traces_list
+    return traces_list
 
 def get_all_sensors():
     types = get_data_types()
@@ -198,7 +204,7 @@ def get_sites():
 
 q_dict = {'24_hours': {'rp_val':'sensorData', 'period_type': 'hours'}, '7_days': {'rp_val':'values_7d', 'period_type': 'days'}, '2_months': {'rp_val':'values_2mo', 'period_type': 'days'}, '1_year': {'rp_val':'values_1y', 'period_type': 'months'}, '5_years': {'rp_val':'values_5y', 'period_type': 'years'}}
 def custom_data(payload):
-    # print payload
+    print payload
     # {'traces':traces, 'range':range, 'period':period, 'site': values.site}
     try:
         arg_dict = {q_dict[payload['range']]['period_type']: payload['period']}
@@ -218,8 +224,12 @@ def custom_data(payload):
     layout = {'title': 'House data'}
     for i in payload['traces']:
         try:
-            val_type = payload['type']
+            print 'types!!!'
+            val_type = str(payload['type'])
             site, sensor = i.split('+')
+            print site
+            print sensor
+            print val_type
         except:
             # not type-based graph
             pass
@@ -230,6 +240,10 @@ def custom_data(payload):
             # not site-based graph
             pass
         try:
+            if payload['type']:
+                print 'Testing for exception'
+            if payload['site']:
+                print 'Testing for site exception'
             trace = i.split('+')
             if len(trace) > 2:
                 site, val_type, sensor = i.split('+')
@@ -237,7 +251,8 @@ def custom_data(payload):
                 val_type, sensor = i.split('+')
                 site = payload['site']
         except:
-            print 'Something fucked up when getting graph'
+            pass
+            # print 'Something fucked up when getting graph'
         # results = client.query('SELECT * FROM \"%s\".%s WHERE time > now() - \'%s\'' %(payload['range'], val_type, timestamp))
         results = client.query('SELECT * FROM \"%s\"."things" WHERE time > now() - \'%s\' AND "type" = \'%s\' AND "sensorID" = \'%s\' AND "site" = \'%s\'' %(payload['range'], timestamp, val_type, sensor, site))
         # dat = results.get_points(tags={'sensorID':sensor})
@@ -245,6 +260,7 @@ def custom_data(payload):
         times = []
         values = []
         if (val_type == 'light'):
+            print 'matched'
             if not thousands:
                 layout.update({'yaxis2': {'title': 'Light', 'overlaying': 'y', 'side': 'right'}})
             thousands = True
