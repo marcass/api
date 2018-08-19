@@ -1,5 +1,8 @@
 ##
 # Place in sites available and enable for door service to be served
+proxy_cache_path /tmp/nginx levels=1:2 keys_zone=cache_one:10m max_size=100m;
+uwsgi_cache_path /tmp/uwsgi levels=1:2 keys_zone=cache_uwsgi:16m max_size=60m;
+
 server {
         listen 80;
         listen [::]:80;
@@ -14,6 +17,7 @@ server {
         index index.html index.htm index.nginx-debian.html;
 
         location / {
+             proxy_cache cache_one;
              # First attempt to serve request as file, then
              # as directory, then fall back to displaying a 404.
              try_files $uri $uri/ =404;
@@ -21,6 +25,13 @@ server {
 
         location /.well-known/acme-challenge {
                 root /var/www/letsencrypt;
+        }
+
+        #influx data
+        location /api/data {
+                proxy_cache cache_one;
+                rewrite ^/api(.*) $1 break;
+                proxy_pass http://127.0.0.1:5000/;
         }
 
         #door api
@@ -34,6 +45,10 @@ server {
                rewrite ^/api(.*) $1 break;
                try_files $uri @api; }
         location @api {
+                uwsgi_cache cache_uwsgi;
+                uwsgi_cache_key $uri;
+                expires 5m;
+                uwsgi_cache_valid any 1h;
                 include uwsgi_params;
                 uwsgi_pass unix:///tmp/api.sock;
         }
