@@ -162,7 +162,8 @@ def get_all_sensors():
     sites = get_sites()
     sensors_list = []
     for i in sites:
-        sensors_list.append({'site': i, 'data': get_sensorIDs(i)})
+        # sensors_list.append(get_sensorIDs(i))
+        sensors_list = sensors_list + get_sensorIDs(i)
     return sensors_list
 
 def get_sensorIDs(site):
@@ -171,13 +172,15 @@ def get_sensorIDs(site):
     # result = []
     # for x in sites:
     # print x
-    ret = {'site': site, 'traces': []}
+    ret = []
+    # ret = {'site': site, 'traces': []}
     for i in types:
         out = client.query('SHOW TAG VALUES ON "sensors" WITH KEY = sensorID WHERE "type" = \'%s\' AND "site" = \'%s\'' %(i, site))
         sens_res = out.get_points()
         for c in sens_res:
             if c:
-                ret['traces'].append({'type': i, 'sensorID': c['value'], 'site': site})
+                # ret['traces'].append({'type': i, 'sensorID': c['value'], 'site': site})
+                ret.append({'type': i, 'sensorID': c['value'], 'site': site})
     # result.append(ret)
     return ret
 
@@ -224,34 +227,47 @@ def custom_data(payload):
     layout = {'title': 'House data'}
     for i in payload['traces']:
         try:
-            print 'types!!!'
-            val_type = str(payload['type'])
-            site, sensor = i.split('+')
-            print site
-            print sensor
-            print val_type
-        except:
-            # not type-based graph
-            pass
-        try:
-            site = payload['site']
-            val_type, sensor = i.split('+')
-        except:
-            # not site-based graph
-            pass
-        try:
-            if payload['type']:
-                print 'Testing for exception'
-            if payload['site']:
-                print 'Testing for site exception'
-            trace = i.split('+')
-            if len(trace) > 2:
-                site, val_type, sensor = i.split('+')
-            else:
-                val_type, sensor = i.split('+')
+            if 'type' in payload:
+                val_type = payload['type']
+                site, sensor = i.split('+')
+            elif 'site' in payload:
                 site = payload['site']
+                val_type, sensor = i.split('+')
+            else:
+                site, val_type, sensor = i.split('+')
+                print site, val_type, sensor
         except:
-            pass
+            print('fuckup.')
+
+        # try:
+        #     print 'types!!!'
+        #     val_type = payload['type']
+        #     site, sensor = i.split('+')
+        #     print site
+        #     print sensor
+        #     print val_type
+        # except:
+        #     # not type-based graph
+        #     pass
+        # try:
+        #     site = payload['site']
+        #     val_type, sensor = i.split('+')
+        # except:
+        #     # not site-based graph
+        #     pass
+        # try:
+        #     if payload['type']:
+        #         print 'Testing for exception'
+        #     if payload['site']:
+        #         print 'Testing for site exception'
+        #     trace = i.split('+')
+        #     if len(trace) > 2:
+        #         site, val_type, sensor = i.split('+')
+        #     else:
+        #         val_type, sensor = i.split('+')
+        #         site = payload['site']
+        # except:
+        #     pass
             # print 'Something fucked up when getting graph'
         # results = client.query('SELECT * FROM \"%s\".%s WHERE time > now() - \'%s\'' %(payload['range'], val_type, timestamp))
         results = client.query('SELECT * FROM \"%s\"."things" WHERE time > now() - \'%s\' AND "type" = \'%s\' AND "sensorID" = \'%s\' AND "site" = \'%s\'' %(payload['range'], timestamp, val_type, sensor, site))
@@ -264,17 +280,17 @@ def custom_data(payload):
             if not thousands:
                 layout.update({'yaxis2': {'title': 'Light', 'overlaying': 'y', 'side': 'right'}})
             thousands = True
-            out = {'connectgaps': False, 'name': sensor+' '+val_type, 'type': 'line', 'x': '', 'y': '', 'yaxis': 'y2'}
+            out = {'connectgaps': False, 'name': site+' '+sensor+' '+val_type, 'type': 'line', 'x': '', 'y': '', 'yaxis': 'y2'}
         if (val_type == 'pid') or (val_type == 'humidity'):
             if not hundreds:
                 layout.update({'yaxis3': {'title': 'Percent', 'overlaying': 'y', 'side': 'right', 'anchor': 'free', 'position': 0.85}})
             hundreds = True
-            out = {'connectgaps': False, 'name': sensor+' '+val_type, 'type': 'line', 'x': '', 'y': '', 'yaxis': 'y3'}
+            out = {'connectgaps': False, 'name': site+' '+sensor+' '+val_type, 'type': 'line', 'x': '', 'y': '', 'yaxis': 'y3'}
         if (val_type == 'temp'):
             if not tens:
                 layout.update({'yaxis':{'title': 'Temperature'}})
             tens = True
-            out = {'connectgaps': False, 'name': sensor+' '+val_type, 'type': 'line', 'x': '', 'y': ''}
+            out = {'connectgaps': False, 'name': site+' '+sensor+' '+val_type, 'type': 'line', 'x': '', 'y': ''}
         for a in dat:
             times.append(a['time'])
             values.append(a[val_type])
