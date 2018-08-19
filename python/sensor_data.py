@@ -91,8 +91,9 @@ def write_data(json):
     # and influx drops point as it won't stuff an int into a float column)
     if (sensType == 'temp') or (sensType == 'humidity'):
         val = float(json['value'])
-    try:
+    if 'state' in json:
         # boiler data
+        print 'adding: '+str(json)
         json_data = [
             {
                 'measurement': 'things',
@@ -108,7 +109,7 @@ def write_data(json):
                 'time': datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
                 }
             ]
-    except:
+    else:
         # default measuremtn for esp sensors
         measurement = 'things'
         json_data = [
