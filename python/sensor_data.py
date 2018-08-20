@@ -228,12 +228,12 @@ def custom_data(payload):
                 layout.update({'yaxis2': {'title': 'Light', 'overlaying': 'y', 'side': 'right'}})
             thousands = True
             out = {'connectgaps': False, 'name': site+' '+sensor+' '+val_type, 'type': 'line', 'x': '', 'y': '', 'yaxis': 'y2'}
-        if (val_type == 'pid') or (val_type == 'humidity'):
+        if (val_type == 'pid') or (val_type == 'humidity') or ((val_type == 'temp') and (site == 'boiler')):
             if not hundreds:
                 layout.update({'yaxis3': {'title': 'Percent', 'overlaying': 'y', 'side': 'right', 'anchor': 'free', 'position': 0.85}})
             hundreds = True
             out = {'connectgaps': False, 'name': site+' '+sensor+' '+val_type, 'type': 'line', 'x': '', 'y': '', 'yaxis': 'y3'}
-        if (val_type == 'temp'):
+        if (val_type == 'temp') and (site != 'boiler'):
             if not tens:
                 layout.update({'yaxis':{'title': 'Temperature'}})
             tens = True
