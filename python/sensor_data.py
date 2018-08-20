@@ -60,15 +60,6 @@ def setup_RP(meas):
     # https://influxdb-python.readthedocs.io/en/latest/api-documentation.html
     # https://docs.influxdata.com/influxdb/v1.6/guides/downsampling_and_retention/
     try:
-        # client.query('CREATE CONTINUOUS QUERY \"%s\" ON %s BEGIN SELECT mean(temp) AS "temp", mean(humidity) AS "humidity", mean(light) AS "light" INTO \"%s\".values_7d FROM \"%s\" GROUP BY time(5m), * END' %(meas+'_cq_7_days', db_name, meas+'_7_days', meas))
-        # client.query('CREATE CONTINUOUS QUERY \"%s\" ON %s BEGIN SELECT mean(temp) AS "temp", mean(humidity) AS "humidity", mean(light) AS "light" INTO \"%s\".values_2mo FROM \"%s\" GROUP BY time(10m), * END' %(meas+'_cq_2_months', db_name, meas+'_2_months', meas))
-        # client.query('CREATE CONTINUOUS QUERY \"%s\" ON %s BEGIN SELECT mean(temp) AS "temp", mean(humidity) AS "humidity", mean(light) AS "light" INTO \"%s\".values_1y FROM \"%s\" GROUP BY time(20m), * END' %(meas+'_cq_1_year', db_name, meas+'_1_year', meas))
-        # client.query('CREATE CONTINUOUS QUERY \"%s\" ON %s BEGIN SELECT mean(temp) AS "temp", mean(humidity) AS "humidity", mean(light) AS "light" INTO \"%s\".values_5y FROM \"%s\" GROUP BY time(30m), * END' %(meas+'_cq_5_years', db_name, meas+'_5_years', meas))
-        # client.query('CREATE CONTINUOUS QUERY \"%s\" ON %s BEGIN SELECT mean(%s) AS \"%s\" INTO "7_days".%s FROM "24_hours".\"%s\" GROUP BY time(5m), * END' %(meas+'_cq_7_days', db_name, meas, meas, meas, meas))
-        # client.query('CREATE CONTINUOUS QUERY \"%s\" ON %s BEGIN SELECT mean(%s) AS \"%s\" INTO "2_months".%s FROM "24_hours".\"%s\" GROUP BY time(10m), * END' %(meas+'_cq_2_months', db_name, meas, meas, meas, meas))
-        # client.query('CREATE CONTINUOUS QUERY \"%s\" ON %s BEGIN SELECT mean(%s) AS \"%s\" INTO "1_year".%s FROM "24_hours".\"%s\" GROUP BY time(20m), * END' %(meas+'_cq_1_year', db_name, meas, meas, meas, meas))
-        # client.query('CREATE CONTINUOUS QUERY \"%s\" ON %s BEGIN SELECT mean(%s) AS \"%s\" INTO "5_years".%s FROM "24_hours".\"%s\" GROUP BY time(30m), * END' %(meas+'_cq_5_years', db_name, meas, meas, meas, meas))
-        # print 'making cqs for '+meas
         client.query('CREATE CONTINUOUS QUERY \"%s\" ON %s BEGIN SELECT mean(%s) AS \"%s\" INTO "7_days"."things" FROM "24_hours"."things" GROUP BY time(5m), * END' %(meas+'_cq_7_days', db_name,  meas, meas))
         client.query('CREATE CONTINUOUS QUERY \"%s\" ON %s BEGIN SELECT mean(%s) AS \"%s\" INTO "2_months"."things" FROM "24_hours"."things" GROUP BY time(10m), * END' %(meas+'_cq_2_months', db_name,  meas, meas))
         client.query('CREATE CONTINUOUS QUERY \"%s\" ON %s BEGIN SELECT mean(%s) AS \"%s\" INTO "1_year"."things" FROM "24_hours"."things" GROUP BY time(20m), * END' %(meas+'_cq_1_year', db_name,  meas, meas))
@@ -87,7 +78,7 @@ def write_data(json):
         setup_RP(json['type'])
     sensType = json['type']
     val = json['value']
-    # influx is fropping values if the arrive as truncated floates (eg 16.00 is sent as 16
+    # influx is dropping values if the arrive as truncated floates (eg 16.00 is sent as an int of 16 by arduinoJSON
     # and influx drops point as it won't stuff an int into a float column)
     if (sensType == 'temp') or (sensType == 'humidity'):
         val = float(json['value'])
@@ -128,8 +119,6 @@ def write_data(json):
             ]
     client.write_points(json_data)
     return {'Status': 'success', 'Message': 'successfully wrote data points'}
-    # except:
-    #     return {'Status': 'error', 'Messgage': 'failed to write data points'}
 
 def get_data_types():
     # returnrs a list [light, etc]
@@ -170,19 +159,13 @@ def get_all_sensors():
 def get_sensorIDs(site):
     # site is a list of sites, this returns sensor id's wiht emasurement in a site
     types = get_data_types()
-    # result = []
-    # for x in sites:
-    # print x
     ret = []
-    # ret = {'site': site, 'traces': []}
     for i in types:
         out = client.query('SHOW TAG VALUES ON "sensors" WITH KEY = sensorID WHERE "type" = \'%s\' AND "site" = \'%s\'' %(i, site))
         sens_res = out.get_points()
         for c in sens_res:
             if c:
-                # ret['traces'].append({'type': i, 'sensorID': c['value'], 'site': site})
                 ret.append({'type': i, 'sensorID': c['value'], 'site': site})
-    # result.append(ret)
     return ret
 
 
@@ -197,34 +180,28 @@ def get_measurements():
 def get_sites():
     sites = []
     results = client.query('SHOW TAG VALUES ON "sensors" WITH KEY = site')
-    # SHOW TAG VALUES on sensors with key= sensorID where "site" = 'marcus'
     meas_types = results.get_points()
-    # sites = np.unique[a['value'] for a in meas_types]
     for a in meas_types:
         if a['value'] not in sites:
             sites.append(a['value'])
-    # print sites
     return sites
 
 q_dict = {'24_hours': {'rp_val':'sensorData', 'period_type': 'hours'}, '7_days': {'rp_val':'values_7d', 'period_type': 'days'}, '2_months': {'rp_val':'values_2mo', 'period_type': 'days'}, '1_year': {'rp_val':'values_1y', 'period_type': 'months'}, '5_years': {'rp_val':'values_5y', 'period_type': 'years'}}
 def custom_data(payload):
     print payload
     # {'traces':traces, 'range':range, 'period':period, 'site': values.site}
-    try:
-        arg_dict = {q_dict[payload['range']]['period_type']: payload['period']}
-        print arg_dict
-        timestamp = (datetime.datetime.utcnow() - datetime.timedelta(**arg_dict)).strftime("%Y-%m-%dT%H:%M:%S.%f000Z")
-    except:
-        timestamp = (datetime.datetime.utcnow() - datetime.timedelta(hours=1)).strftime("%Y-%m-%dT%H:%M:%S.%f000Z")
+    # try:
+    arg_dict = {q_dict[payload['range']]['period_type']: int(payload['period'])}
+    print arg_dict
+    timestamp = (datetime.datetime.utcnow() - datetime.timedelta(**arg_dict)).strftime("%Y-%m-%dT%H:%M:%S.%f000Z")
+    print timestamp
+    # except:
+    #     timestamp = (datetime.datetime.utcnow() - datetime.timedelta(hours=1)).strftime("%Y-%m-%dT%H:%M:%S.%f000Z")
     res = []
-    # colours = ['red', 'blue', 'green', 'black', 'yellow', 'orange']
-    # count = 0
+    # setup layout of graph
     thousands = False
     hundreds = False
     tens = False
-    # parse values to graph:
-    # results = client.query('SELECT * FROM \"%s\".%s WHERE time > \'%s\'' %(payload['range'], val_type, timestamp))
-    # setup layout of graph
     layout = {'title': 'House data'}
     for i in payload['traces']:
         try:
@@ -239,40 +216,7 @@ def custom_data(payload):
                 print site, val_type, sensor
         except:
             print('fuckup.')
-
-        # try:
-        #     print 'types!!!'
-        #     val_type = payload['type']
-        #     site, sensor = i.split('+')
-        #     print site
-        #     print sensor
-        #     print val_type
-        # except:
-        #     # not type-based graph
-        #     pass
-        # try:
-        #     site = payload['site']
-        #     val_type, sensor = i.split('+')
-        # except:
-        #     # not site-based graph
-        #     pass
-        # try:
-        #     if payload['type']:
-        #         print 'Testing for exception'
-        #     if payload['site']:
-        #         print 'Testing for site exception'
-        #     trace = i.split('+')
-        #     if len(trace) > 2:
-        #         site, val_type, sensor = i.split('+')
-        #     else:
-        #         val_type, sensor = i.split('+')
-        #         site = payload['site']
-        # except:
-        #     pass
-            # print 'Something fucked up when getting graph'
-        # results = client.query('SELECT * FROM \"%s\".%s WHERE time > now() - \'%s\'' %(payload['range'], val_type, timestamp))
         results = client.query('SELECT * FROM \"%s\"."things" WHERE time > now() - \'%s\' AND "type" = \'%s\' AND "sensorID" = \'%s\' AND "site" = \'%s\'' %(payload['range'], timestamp, val_type, sensor, site))
-        # dat = results.get_points(tags={'sensorID':sensor})
         dat = results.get_points()
         times = []
         values = []
@@ -297,59 +241,29 @@ def custom_data(payload):
             values.append(a[val_type])
         out['x'] = times
         out['y'] = values
-        # out['colour'] = colours[count]
-        # count += 1
         res.append(out)
     final_res = {'layout':layout, 'data': res}
-    # print final_res
     return {'layout':layout, 'data': res}
 
 def start_data(payload):
-    # want to graph sensors from one site, so payload should be in this format:
-    # {"site":"marcus", "sensorIDs":[], "range":<RP to graph from>, "period": int}
-    # payload = {"measurement": [{"site": <site1>, "sensors":[{'id': <sens1>, 'type': <temp/hum>}........]},....], "range":<RP to graph from>, "period": int}
-    # print 'payload for graph is:'
-    # print payload
     try:
         arg_dict = {q_dict[payload['range']]['period_type']: payload['period']}
         print arg_dict
         timestamp = (datetime.datetime.utcnow() - datetime.timedelta(**arg_dict)).strftime("%Y-%m-%dT%H:%M:%S.%f000Z")
     except:
-    # timestamp = (datetime.datetime.utcnow() - datetime.timedelta(hours=int(payload['period']))).strftime("%Y-%m-%dT%H:%M:%S.%f000Z")
         timestamp = (datetime.datetime.utcnow() - datetime.timedelta(hours=24)).strftime("%Y-%m-%dT%H:%M:%S.%f000Z")
-    # results = client.query('SELECT * FROM "boiler"."autogen"."boilerEvents" WHERE time > %s' %("'"+timestamp+"'"))
-    # target = payload["range"]+"."+q_dict[payload["range"]]["rp_val"]
-    # print target
     res = []
-    # colours = ['red', 'blue', 'green', 'black', 'yellow', 'orange']
-    # count = 0
-    # results = client.query('SELECT * FROM "24_hours".marcus WHERE time > \'%s\'' %(timestamp))
     results = client.query('SELECT * FROM "7_days".temp WHERE time > now() - \'%s\'' %(timestamp))
-    # results = client.query('SELECT * FROM \"%s\".%s WHERE time > \'%s\'' %(payload['range'], q_dict[payload['range']['rp_val']], timestamp))
-    # print results.raw
     for x in payload['measurement']:
         for i in x['sensors']:
-            # results = client.query('SELECT %s FROM \"%s\".\"%s\" WHERE time > \'%s\'' %(i['type'], payload["range"], payload['measurement'], timestamp))
             times = []
             values = []
-            # if i in temps:
-            # out = {'marker': {'color': '', 'size': '10', 'symbol': 104}, 'name': i['id'], 'type': 'line', 'x': '', 'y': '', 'yaxis': 'yaxis'}
             out = {'marker': {'color': 'red', 'size': '10'}, 'name': i['id'], 'type': 'line', 'x': '', 'y': ''}
-                # data = results.get_points()
-            # if i in pids:
-            #     out = {'marker': {'color': '', 'size': '10', 'symbol': 104}, 'name': i, 'type': 'line', 'x': '', 'y': '', 'yaxis': 'yaxis2'}
-                # data = results.get_points(tags={'status': 'Heating'})
             data = results.get_points(tags={"sensorID": i['id']})
-            # print data
             for a in data:
                 times.append(a['time'])
                 values.append(a[i['type']])
-            # out['colour'] = colours[count]
-            # count += 1
             out['x'] = times
             out['y'] = values
-            # print times
-            # print values
             res.append(out)
-    # print res
     return res
