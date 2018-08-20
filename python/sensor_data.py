@@ -186,6 +186,7 @@ def get_sites():
             sites.append(a['value'])
     return sites
 
+#q_dict = {'24_hours': {'rp_val':'sensorData', 'period_type': 'hours'}, '7_days': {'rp_val':'values_7d', 'period_type': 'days'}, '2_months': {'rp_val':'values_2mo', 'period_type': 'days'}, '1_year': {'rp_val':'values_1y', 'period_type': 'months'}, '5_years': {'rp_val':'values    _5y', 'period_type': 'years'}}
 q_dict = {'24_hours': {'rp_val':'sensorData', 'period_type': 'hours'}, '7_days': {'rp_val':'values_7d', 'period_type': 'days'}, '2_months': {'rp_val':'values_2mo', 'period_type': 'days'}, '1_year': {'rp_val':'values_1y', 'period_type': 'months'}, '5_years': {'rp_val':'values_5y', 'period_type': 'years'}}
 def custom_data(payload):
     print payload
@@ -216,7 +217,8 @@ def custom_data(payload):
                 print site, val_type, sensor
         except:
             print('fuckup.')
-        results = client.query('SELECT * FROM \"%s\"."things" WHERE time > now() - \'%s\' AND "type" = \'%s\' AND "sensorID" = \'%s\' AND "site" = \'%s\'' %(payload['range'], timestamp, val_type, sensor, site))
+        results = client.query('SELECT * FROM \"%s\"."things" WHERE time > \'%s\' AND time < now() AND "type" = \'%s\' AND "sensorID" = \'%s\' AND "site" = \'%s\'' %(payload['range'], timestamp, val_type, sensor, site))
+        #results = client.query('SELECT * FROM \"%s\"."things" WHERE time > now() - \'%s\' AND "type" = \'%s\' AND "sensorID" = \'%s\' AND "site" = \'%s\'' %(payload['range'], timestamp, val_type, sensor, site))
         dat = results.get_points()
         times = []
         values = []
