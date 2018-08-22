@@ -1,6 +1,6 @@
 [Unit]
-Description=Gunicorn served auth api for services at home
-After=network.target
+Description=Gunicorn served door api
+After=auth-api.service
 
 #https://www.digitalocean.com/community/tutorials/how-to-serve-flask-applications-with-gunicorn-and-nginx-on-ubuntu-18-04
 
@@ -8,7 +8,7 @@ After=network.target
 User=marcus
 Group=www-data
 WorkingDirectory=/home/marcus/git/api/python
-ExecStart=/usr/local/bin/gunicorn --workers 3 --bind localhost:5001 -m 007 views_auth:app
+ExecStart=/usr/local/bin/gunicorn --workers 3 --bind localhost:5003 -m 007 door_views:app
 
 [Install]
 WantedBy=multi-user.target

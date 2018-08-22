@@ -1,11 +1,11 @@
 ##
 # Place in sites available and enable for door service to be served
 proxy_cache_path /tmp/nginx levels=1:2 keys_zone=cache_one:10m max_size=100m;
-uwsgi_cache_path /tmp/uwsgi levels=1:2 keys_zone=cache_uwsgi:16m max_size=60m;
+#uwsgi_cache_path /tmp/uwsgi levels=1:2 keys_zone=cache_uwsgi:16m max_size=60m;
 
 server {
-        listen 80;
-        listen [::]:80;
+        #listen 80;
+        #listen [::]:80;
         # SSL configuration
         #
         listen 443 ssl;
@@ -31,7 +31,21 @@ server {
         location /api/data {
                 proxy_cache cache_one;
                 rewrite ^/api(.*) $1 break;
-                proxy_pass http://127.0.0.1:5000/;
+                proxy_pass http://127.0.0.1:5002/;
+        }
+
+        #door data
+        location /api/door {
+                proxy_cache cache_one;
+                rewrite ^/api(.*) $1 break;
+                proxy_pass http://127.0.0.1:5003/;
+        }
+
+        #auth api
+        location /api/auth {
+                proxy_cache cache_one;
+                rewrite ^/api(.*) $1 break;
+                proxy_pass http://127.0.0.1:5001/;
         }
 
         #door api
@@ -41,15 +55,15 @@ server {
 #        }
 
         #uwsgi api
-        location /api {
-               rewrite ^/api(.*) $1 break;
-               try_files $uri @api; }
-        location @api {
-                uwsgi_cache cache_uwsgi;
-                uwsgi_cache_key $uri;
-                expires 5m;
-                uwsgi_cache_valid any 1h;
-                include uwsgi_params;
-                uwsgi_pass unix:///tmp/api.sock;
-        }
+#        location /api {
+#               rewrite ^/api(.*) $1 break;
+#               try_files $uri @api; }
+#        location @api {
+                #uwsgi_cache cache_uwsgi;
+                #uwsgi_cache_key $uri;
+                #expires 5m;
+                #uwsgi_cache_valid any 1h;
+#                include uwsgi_params;
+#                uwsgi_pass unix:///tmp/api.sock;
+#        }
 }
