@@ -8,7 +8,7 @@ After=network.target
 User=marcus
 Group=www-data
 WorkingDirectory=/home/marcus/git/api/python
-ExecStart=/usr/local/bin/gunicorn --workers 3 --bind localhost:5001 -m 007 views_auth:app
+ExecStart=/usr/local/bin/gunicorn --bind 127.0.0.1:5001 -m 007 views_auth:app
 
 [Install]
 WantedBy=multi-user.target

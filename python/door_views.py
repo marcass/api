@@ -58,7 +58,6 @@ import sql
 import creds
 from flask import Flask, request, jsonify
 import json
-import sensor_data as sensors
 from init import app, jwt
 from flask_jwt_extended import jwt_required, \
     get_jwt_identity, get_jwt_claims
