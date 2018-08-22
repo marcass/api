@@ -12,29 +12,7 @@ import creds
 
 app.secret_key = creds.jwt_secret  # Change this!
 app.config['JWT_HEADER_TYPE'] = 'Bearer'
-#jwt = JWTManager(app)
 
-# import os
-# if os.environ.has_key('LOGIN_PW'):
-#   pw = os.environ['LOGIN_PW']
-# else:
-#   pw = 'password'
-
-# @app.route('/auth/login', methods=['POST'])
-# def auth():
-#     username = request.json.get('username', None)
-#     password = request.json.get('password', None)
-#     if username != 'admin' or password != pw:
-#         return jsonify({"msg": "Bad username or password"}), 401
-#
-#     # Use create_access_token() and create_refresh_token() to create our
-#     # access and refresh tokens
-#     ret = {
-#         'access_token': create_access_token(identity=username),
-#         'refresh_token': create_refresh_token(identity=username)
-#     }
-#     print ret
-#     return jsonify(ret), 200
 
 # http://flask-jwt-extended.readthedocs.io/en/latest/tokens_from_complex_object.html
 # Create a function that will be called whenever create_access_token
@@ -103,3 +81,6 @@ def my_expired_token_callback():
         'sub_status': 101,
         'msg': 'The token has expired'
     }), 401
+
+if __name__ == "__main__":
+    app.run()

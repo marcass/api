@@ -1,0 +1,19 @@
+[Unit]
+Description=Gunicorn served auth api for services at home
+After=network.target
+
+#https://www.digitalocean.com/community/tutorials/how-to-serve-flask-applications-with-gunicorn-and-nginx-on-ubuntu-18-04
+
+[Service]
+User=marcus
+Group=www-data
+WorkingDirectory=/home/marcus/git/api/python
+ExecStart=gunicorn --workers 3 --bind unix:myproject.sock -m 007 wsgi:app
+Restart=always
+KillSignal=SIGQUIT
+Type=notify
+StandardError=syslog
+NotifyAccess=all
+
+[Install]
+WantedBy=multi-user.target

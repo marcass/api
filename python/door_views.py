@@ -57,15 +57,11 @@ import re
 import sql
 import creds
 from flask import Flask, request, jsonify
-# from flask_cors import CORS
-# from flask_jwt_extended import JWTManager
 import json
-import views_auth
 import sensor_data as sensors
 from init import app, jwt
 from flask_jwt_extended import jwt_required, \
-    create_access_token, jwt_refresh_token_required, \
-    create_refresh_token, get_jwt_identity, get_jwt_claims
+    get_jwt_identity, get_jwt_claims
 
 # to access roles/user in token:
 @app.route('/protected', methods=['GET'])
@@ -102,58 +98,6 @@ def hello():
     else:
         return jsonify({"msg": "Forbidden"}), 403
 
-
-# Boiler Routes #########################################
-@app.route("/boiler", methods=['GET',])
-@jwt_required
-def boiler_data():
-    '''
-    Returns data dump of everything
-    '''
-    allowed = ['admin', 'user']
-    if get_jwt_claims()['role'] in allowed:
-        return jsonify(boiler.get_data()), 200
-    else:
-        return jsonify({"msg": "Forbidden"}), 403
-
-@app.route("/boiler", methods=['POST',])
-@jwt_required
-def boiler__custom_data():
-    '''
-    Returns data dump of specified data
-    '''
-    allowed = ['admin', 'python']
-    if get_jwt_claims()['role'] in allowed:
-        content = request.get_json(silent=False)
-        return jsonify(boiler.custom_data(content)), 200
-    else:
-        return jsonify({"msg": "Forbidden"}), 403
-
-@app.route("/boiler/values", methods=['GET',])
-@jwt_required
-def boiler_values():
-    '''
-    Returns value types
-    '''
-    allowed = ['admin', 'user']
-    if get_jwt_claims()['role'] in allowed:
-        return jsonify(boiler.get_values()), 200
-    else:
-        return jsonify({"msg": "Forbidden"}), 403
-
-@app.route("/boiler/state", methods=['GET',])
-@jwt_required
-def boiler_state():
-    '''
-    Returns boiler state
-    '''
-    allowed = ['admin', 'user']
-    if get_jwt_claims()['role'] in allowed:
-        return jsonify(boiler.get_state()), 200
-    else:
-        return jsonify({"msg": "Forbidden"}), 403
-
-# Door control routes#####################################
 @app.route("/listallowed", methods=['GET',])
 @jwt_required
 def list_allowed_keys():
