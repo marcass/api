@@ -62,6 +62,8 @@ from init import app, jwt
 from flask_jwt_extended import jwt_required, \
     get_jwt_identity, get_jwt_claims
 
+app.secret_key = creds.jwt_secret
+
 # to access roles/user in token:
 @app.route('/protected', methods=['GET'])
 @jwt_required
