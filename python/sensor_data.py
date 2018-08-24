@@ -82,6 +82,8 @@ def write_data(json):
     # and influx drops point as it won't stuff an int into a float column)
     if (sensType == 'temp') or (sensType == 'humidity'):
         val = float(json['value'])
+        if val < -100.0:
+            return {'Status': 'Error', 'Message': 'Value of '+str(val)+' out of range'}
     if 'state' in json:
         # boiler data
         print 'adding: '+str(json)
