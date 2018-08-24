@@ -86,7 +86,7 @@ def write_data(json):
             return {'Status': 'Error', 'Message': 'Value of '+str(val)+' out of range'}
     if 'state' in json:
         # boiler data
-        print 'adding: '+str(json)
+        #print 'adding: '+str(json)
         json_data = [
             {
                 'measurement': 'things',
@@ -272,21 +272,16 @@ def start_data(payload):
             res.append(out)
     return res
 
-# q_dict = {'24_hours': {'rp_val':'sensorData', 'period_type': 'hours'}, '7_days': {'rp_val':'values_7d', 'period_type': 'days'}, '2_months': {'rp_val':'values_2mo', 'period_type': 'days'}, '1_year': {'rp_val':'values_1y', 'period_type': 'months'}, '5_years': {'rp_val':'values_5y', 'period_type': 'years'}}
 def custom_ax(payload):
-    print payload
-    # ["site": site, "traces": [{"senosorID": "lounge", "site": "julian", "type": "light"}, .....], "range":<RP to graph from>, "period": int}
-    # try:
+# {u'range': u'7_days', u'traces': [{u'members': [{u'sensorID': u'dining', u'type': u'temp', u'site': u'julian'}, {u'sensorID': u'upstairs', u'type': u'temp', u'site': u'julian'}], u'yaxis': u'y'}, {u'members': [{u'sensorID': u'heater', u'type': u'temp', u'site': u'julian'}], u'yaxis': u'y2'}, {u'members': [], u'yaxis': u'y3'}], u'period': 1, u'site': u'julian'}
+# {u'members': [{u'sensorID': u'dining', u'type': u'temp', u'site': u'julian'}, {u'sensorID': u'upstairs', u'type': u'temp', u'site': u'julian'}], u'yaxis': u'y'}
     arg_dict = {q_dict[payload['range']]['period_type']: int(payload['period'])}
-    print arg_dict
     timestamp = (datetime.datetime.utcnow() - datetime.timedelta(**arg_dict)).strftime("%Y-%m-%dT%H:%M:%S.%f000Z")
-    print timestamp
-    # except:
-    #     timestamp = (datetime.datetime.utcnow() - datetime.timedelta(hours=1)).strftime("%Y-%m-%dT%H:%M:%S.%f000Z")
     res = []
     # setup layout of graph
     layout = {'title': 'House data'}
-    for a in payload:
+    site = payload['site']
+    for a in payload['traces']:
         if a['yaxis'] == 'y':
             print 'Normal axis, not appending'
         else:
@@ -294,10 +289,10 @@ def custom_ax(payload):
                 layout.update({'yaxis2': {'title': 'Bum hole', 'overlaying': 'y', 'side': 'right'}})
             if a['yaxis'] == 'y3':
                 layout.update({'yaxis3': {'title': 'Arrrgggh', 'overlaying': 'y', 'side': 'right', 'anchor': 'free', 'position': 0.85}})
-        for i in a['traces']:
+        axis = a['yaxis']
+        for i in a['members']:
             try:
                 sensor = i['sensorID']
-                site = i['site']
                 val_type = i['type']
             except:
                 print('fuckup.')
@@ -306,7 +301,7 @@ def custom_ax(payload):
             dat = results.get_points()
             times = []
             values = []
-            out = {'connectgaps': False, 'name': site+' '+sensor+' '+val_type, 'type': 'line', 'x': '', 'y': '', 'yaxis': a['yaxis']}
+            out = {'connectgaps': False, 'name': site+' '+sensor+' '+val_type, 'type': 'line', 'x': '', 'y': '', 'yaxis': axis}
             for a in dat:
                 times.append(a['time'])
                 values.append(a[val_type])
