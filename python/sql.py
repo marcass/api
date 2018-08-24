@@ -95,9 +95,12 @@ def setup_admin_user(user, passw):
 
 def auth_user(thisuser, passw):
     conn, c = get_db()
+    #print thisuser, passw
     try:
+    #c.execute("SELECT * FROM userAuth")
         c.execute("SELECT * FROM userAuth WHERE username=?", (thisuser,))
         ret = c.fetchall()
+        #print ret
         pw_hash = ret[0][1]
         role = ret[0][2]
         if (pbkdf2_sha256.verify(passw, pw_hash)):
@@ -107,6 +110,7 @@ def auth_user(thisuser, passw):
         ret_dict = {'status': status, 'role': role}
     except:
         ret_dict = {'status': 'exception', 'role': 'undefined'}
+    #print ret_dict
     return ret_dict
 
 def get_user_role(thisuser):
@@ -259,7 +263,7 @@ def setup_user(user_in, passw, role=0):
         if role == 0:
             role = 'user'
         pw_hash = pbkdf2_sha256.hash(passw)
-        c.execute("SELECT * FROM userAuth")
+        #c.execute("SELECT * FROM userAuth")
         c.execute("INSERT INTO userAuth VALUES (?,?,?)", (user_in, pw_hash, role))
         conn.commit()
         return True
@@ -293,6 +297,7 @@ def write_userdata(resp):
     conn, c = get_db()
     if (resp['role'] == 'admin') or (resp['role'] == 'user') or (resp['role'] == 'burner'):
         # this user can open doors
+        print 'adding door user'
         start = resp['timeStart']
         end = resp['timeEnd']
         if (start == '') or (start == None):
@@ -322,9 +327,11 @@ def write_userdata(resp):
         return {'Status':'Success', 'Message': 'Door user '+resp['username'] + ' successfully updated'}
     else:
         if (setup_user(resp['username'], resp['password'], resp['role'])):
+            print 'sucessfully added'
             return {'Status':'Success', 'Message': 'Backend user '+resp['username'] + ' successfully updated'}
         else:
             return {'Status': 'Error',  'Message': 'Failed to setup user'}
+
 
 def update_canOpen(user, doors):
     conn, c = get_db()
