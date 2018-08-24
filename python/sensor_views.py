@@ -81,6 +81,24 @@ def get_cust_values():
     else:
         return jsonify({"msg": "Forbidden"}), 403
 
+@app.route("/data/values/customAx", methods=['POST',])
+@jwt_required
+def get_cust_axes():
+    '''
+    Get data from influx
+    sends: {"site": site, "traces": [{"senosorID": "lounge", "site": "julian", "type": "light"}, .....], "range":<RP to graph from>, "period": int}
+    returns: traces for plotly
+    '''
+    # print request.headers
+    allowed = ['admin', 'sensuser']
+    if get_jwt_claims()['role'] in allowed:
+        content = request.get_json(silent=False)
+        # print 'views content is:'
+        # print content
+        return jsonify(sensors.custom_ax(content)), 200
+    else:
+        return jsonify({"msg": "Forbidden"}), 403
+
 @app.route("/data/values/sites", methods=['GET',])
 @jwt_required
 def get_sites():

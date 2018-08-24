@@ -271,3 +271,47 @@ def start_data(payload):
             out['y'] = values
             res.append(out)
     return res
+
+# q_dict = {'24_hours': {'rp_val':'sensorData', 'period_type': 'hours'}, '7_days': {'rp_val':'values_7d', 'period_type': 'days'}, '2_months': {'rp_val':'values_2mo', 'period_type': 'days'}, '1_year': {'rp_val':'values_1y', 'period_type': 'months'}, '5_years': {'rp_val':'values_5y', 'period_type': 'years'}}
+def custom_ax(payload):
+    print payload
+    # ["site": site, "traces": [{"senosorID": "lounge", "site": "julian", "type": "light"}, .....], "range":<RP to graph from>, "period": int}
+    # try:
+    arg_dict = {q_dict[payload['range']]['period_type']: int(payload['period'])}
+    print arg_dict
+    timestamp = (datetime.datetime.utcnow() - datetime.timedelta(**arg_dict)).strftime("%Y-%m-%dT%H:%M:%S.%f000Z")
+    print timestamp
+    # except:
+    #     timestamp = (datetime.datetime.utcnow() - datetime.timedelta(hours=1)).strftime("%Y-%m-%dT%H:%M:%S.%f000Z")
+    res = []
+    # setup layout of graph
+    layout = {'title': 'House data'}
+    for a in payload:
+        if a['yaxis'] == 'y':
+            print 'Normal axis, not appending'
+        else:
+            if a['yaxis'] == 'y2':
+                layout.update({'yaxis2': {'title': 'Bum hole', 'overlaying': 'y', 'side': 'right'}})
+            if a['yaxis'] == 'y3':
+                layout.update({'yaxis3': {'title': 'Arrrgggh', 'overlaying': 'y', 'side': 'right', 'anchor': 'free', 'position': 0.85}})
+        for i in a['traces']:
+            try:
+                sensor = i['sensorID']
+                site = i['site']
+                val_type = i['type']
+            except:
+                print('fuckup.')
+            results = client.query('SELECT * FROM \"%s\"."things" WHERE time > \'%s\' AND time < now() AND "type" = \'%s\' AND "sensorID" = \'%s\' AND "site" = \'%s\'' %(payload['range'], timestamp, val_type, sensor, site))
+            #results = client.query('SELECT * FROM \"%s\"."things" WHERE time > now() - \'%s\' AND "type" = \'%s\' AND "sensorID" = \'%s\' AND "site" = \'%s\'' %(payload['range'], timestamp, val_type, sensor, site))
+            dat = results.get_points()
+            times = []
+            values = []
+            out = {'connectgaps': False, 'name': site+' '+sensor+' '+val_type, 'type': 'line', 'x': '', 'y': '', 'yaxis': a['yaxis']}
+            for a in dat:
+                times.append(a['time'])
+                values.append(a[val_type])
+            out['x'] = times
+            out['y'] = values
+            res.append(out)
+    final_res = {'layout':layout, 'data': res}
+    return {'layout':layout, 'data': res}
