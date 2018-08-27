@@ -285,20 +285,20 @@ def custom_ax(payload):
         title = a['label']
         if a['yaxis'] == 'y':
             if title != '':
-                layout.update({'title': title})
+                layout.update({'yaxis': {'title': title}})
             else:
-                layout.update({'title': 'y1'})
+                layout.update({'yaxis': {'title': 'y1'}})
         else:
             if a['yaxis'] == 'y2':
                 if title != '':
-                    layout.update({'yaxis2': {'title': 'title', 'overlaying': 'y', 'side': 'right'}})
+                    layout.update({'yaxis2': {'title': title, 'overlaying': 'y', 'side': 'right'}})
                 else:
                     layout.update({'yaxis2': {'title': 'y2', 'overlaying': 'y', 'side': 'right'}})
             if a['yaxis'] == 'y3':
                 if title != '':
-                    layout.update({'yaxis3': {'title': title, 'overlaying': 'y', 'side': 'right', 'anchor': 'free', 'position': -0.85}})
+                    layout.update({'yaxis3': {'title': title, 'overlaying': 'y', 'side': 'right', 'anchor': 'free', 'position': 0.85}})
                 else:
-                    layout.update({'yaxis3': {'title': 'y3', 'overlaying': 'y', 'side': 'right', 'anchor': 'free', 'position': -0.85}})
+                    layout.update({'yaxis3': {'title': 'y3', 'overlaying': 'y', 'side': 'right', 'anchor': 'free', 'position': 0.85}})
         axis = a['yaxis']
         for i in a['members']:
             try:
