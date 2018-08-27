@@ -282,13 +282,23 @@ def custom_ax(payload):
     layout = {'title': 'House data'}
     site = payload['site']
     for a in payload['traces']:
+        title = a['label']
         if a['yaxis'] == 'y':
-            print 'Normal axis, not appending'
+            if title != '':
+                layout.update({'title': title})
+            else:
+                layout.update({'title': 'y1'})
         else:
             if a['yaxis'] == 'y2':
-                layout.update({'yaxis2': {'title': 'Bum hole', 'overlaying': 'y', 'side': 'right'}})
+                if title != '':
+                    layout.update({'yaxis2': {'title': 'title', 'overlaying': 'y', 'side': 'right'}})
+                else:
+                    layout.update({'yaxis2': {'title': 'y2', 'overlaying': 'y', 'side': 'right'}})
             if a['yaxis'] == 'y3':
-                layout.update({'yaxis3': {'title': 'Arrrgggh', 'overlaying': 'y', 'side': 'right', 'anchor': 'free', 'position': 0.85}})
+                if title != '':
+                    layout.update({'yaxis3': {'title': title, 'overlaying': 'y', 'side': 'right', 'anchor': 'free', 'position': -0.85}})
+                else:
+                    layout.update({'yaxis3': {'title': 'y3', 'overlaying': 'y', 'side': 'right', 'anchor': 'free', 'position': -0.85}})
         axis = a['yaxis']
         for i in a['members']:
             try:
