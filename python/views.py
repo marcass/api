@@ -252,7 +252,7 @@ def get_user_role(username):
     '''
 
     '''
-    allowed = ['admin']
+    allowed = ['admin', 'user', 'sensuser']
     if get_jwt_claims()['role'] in allowed:
         content = request.get_json(silent=False)
         print content
@@ -386,7 +386,7 @@ def update_user_password():
     '''
     Select Username and update table
     '''
-    allowed = ['admin', 'user']
+    allowed = ['admin', 'user', 'sensuser']
     if get_jwt_claims()['role'] in allowed:
         content = request.get_json(silent=False)
         return jsonify(sql.update_doorUsers(content['username'], 'password', content['password'])), 200
