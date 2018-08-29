@@ -60,6 +60,71 @@ def auth():
         print 'empty request'
 	return jsonify({'Status':'Error', 'Message':'Empty request'})
 
+@app.route('/auth/user', methods=['POST'])
+def add_user():
+    '''
+    Add a new user to auth table
+    '''
+    allowed = ['admin']
+    if get_jwt_claims()['role'] in allowed:
+        try:
+            username = request.json.get('username', None)
+            password = request.json.get('password', None)
+            role = request.json.get('role', None)
+            # print username
+            # print password
+            if sql.setup_user(username, password, role):
+                return jsonify({'Status':'Success', 'Message':'User '+username+' successfully added'}), 200
+            else:
+                # print 'fucked up with a bad username'
+    	    return jsonify({'Status':'Error', 'Message':'Adding user '+username+' failed'}), 400
+        except:
+            print 'empty request'
+    else:
+       return jsonify({"msg": "Forbidden"}), 403
+
+@app.route("/auth/user/password", methods=['PUT',])
+@jwt_required
+def update_user_password():
+    '''
+    Select Username and update pass
+    '''
+    allowed = ['admin', 'user', 'sensuser']
+    if get_jwt_claims()['role'] in allowed:
+        content = request.get_json(silent=False)
+        return jsonify(sql.update_user(content['username'], 'password', content['password'])), 200
+    else:
+        return jsonify({"msg": "Forbidden"}), 403
+
+@app.route("/auth/user/<username>", methods=['GET'])
+@jwt_required
+def get_user_role(username):
+    '''
+    Authenitcate a user as being in DB and return role
+    '''
+    allowed = ['admin', 'user', 'sensuser']
+    if get_jwt_claims()['role'] in allowed:
+        content = request.get_json(silent=False)
+        print content
+        password = content['password']
+        #password = request.json.get('password', None)
+        return jsonify(sql.auth_user(username, password)), 200
+    else:
+        return jsonify({"msg": "Forbidden"}), 403
+
+@app.route("/auth/user/<username>", methods=['DELETE',])
+@jwt_required
+def remove_user(username):
+    '''
+    Remove Username in user doorUsers table, and update all tables...
+    {'username':'mw'}
+    '''
+    allowed = ['admin']
+    if get_jwt_claims()['role'] in allowed:
+        return jsonify(sql.delete_user(username)), 200
+    else:
+        return jsonify({"msg": "Forbidden"}), 403
+
 # The jwt_refresh_token_required decorator insures a valid refresh
 # token is present in the request before calling this endpoint. We
 # can use the get_jwt_identity() function to get the identity of

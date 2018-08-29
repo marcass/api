@@ -54,6 +54,7 @@
 import sys
 import paho.mqtt.publish as publish
 import re
+import requests
 import sql
 import creds
 from flask import Flask, request, jsonify
@@ -63,21 +64,6 @@ from flask_jwt_extended import jwt_required, \
     get_jwt_identity, get_jwt_claims
 
 app.secret_key = creds.jwt_secret
-
-# to access roles/user in token:
-@app.route('/protected', methods=['GET'])
-@jwt_required
-def protected():
-    ret = {
-        'current_identity': get_jwt_identity(),  # test
-        'current_role': get_jwt_claims()  # ['foo', 'bar']
-    }
-    # or could just do:
-    # if get_jwt_claims() in ['some list of roles allowed']:
-    #     print 'doing stuff'
-    # else:
-    #     return jsonify({"msg": "Forbidden"}), 403
-    return jsonify(ret), 200
 
 def get_access_log(days):
     d = sql.get_doorlog(days)
@@ -178,18 +164,18 @@ def add_user():
     else:
         return jsonify({"msg": "Forbidden"}), 403
 
-@app.route("/user/<username>", methods=['DELETE',])
-@jwt_required
-def remove_user(username):
-    '''
-    Remove Username in user doorUsers table, and update all tables...
-    {'username':'mw'}
-    '''
-    allowed = ['admin']
-    if get_jwt_claims()['role'] in allowed:
-        return jsonify(sql.delete_user(username)), 200
-    else:
-        return jsonify({"msg": "Forbidden"}), 403
+# @app.route("/user/<username>", methods=['DELETE',])
+# @jwt_required
+# def remove_user(username):
+#     '''
+#     Remove Username in user doorUsers table, and update all tables...
+#     {'username':'mw'}
+#     '''
+#     allowed = ['admin']
+#     if get_jwt_claims()['role'] in allowed:
+#         return jsonify(sql.delete_user(username)), 200
+#     else:
+#         return jsonify({"msg": "Forbidden"}), 403
 
 @app.route("/auth/user/<username>", methods=['GET','POST'])
 @jwt_required
@@ -267,7 +253,7 @@ def update_user_keycode():
         if not keycode_validation(content['keycode']):
             return jsonify({'Status': 'Error', 'Message':'Keycode validation failure. Please try again'}), 200
         else:
-            resp = sql.update_doorUsers(content['username'], 'keycode', content['keycode'])
+            resp = sql.update_user(content['username'], 'keycode', content['keycode'])
             return jsonify(resp), 200
     else:
         return jsonify({"msg": "Forbidden"}), 403
@@ -282,7 +268,7 @@ def update_user_enabled():
     allowed = ['admin']
     if get_jwt_claims()['role'] in allowed:
         content = request.get_json(silent=False)
-        return jsonify(sql.update_doorUsers(content['username'], 'enabled', int(content['enabled']))), 200
+        return jsonify(sql.update_user(content['username'], 'enabled', int(content['enabled']))), 200
     else:
         return jsonify({"msg": "Forbidden"}), 403
 
@@ -295,7 +281,7 @@ def update_user_timestart():
     allowed = ['admin', 'user']
     if get_jwt_claims()['role'] in allowed:
         content = request.get_json(silent=False)
-        return jsonify(sql.update_doorUsers(content['username'], 'timeStart', content['timeStart'])), 200
+        return jsonify(sql.update_user(content['username'], 'timeStart', content['timeStart'])), 200
     else:
         return jsonify({"msg": "Forbidden"}), 403
 
@@ -308,7 +294,7 @@ def update_user_timeend():
     allowed = ['admin', 'user']
     if get_jwt_claims()['role'] in allowed:
         content = request.get_json(silent=False)
-        return jsonify(sql.update_doorUsers(content['username'], 'timeEnd', content['timeEnd'])), 200
+        return jsonify(sql.update_user(content['username'], 'timeEnd', content['timeEnd'])), 200
     else:
         return jsonify({"msg": "Forbidden"}), 403
 
@@ -334,7 +320,7 @@ def update_user_password():
     allowed = ['admin', 'user', 'sensuser']
     if get_jwt_claims()['role'] in allowed:
         content = request.get_json(silent=False)
-        return jsonify(sql.update_doorUsers(content['username'], 'password', content['password'])), 200
+        return jsonify(sql.update_user(content['username'], 'password', content['password'])), 200
     else:
         return jsonify({"msg": "Forbidden"}), 403
 
@@ -347,7 +333,7 @@ def update_user_role():
     allowed = ['admin']
     if get_jwt_claims()['role'] in allowed:
         content = request.get_json(silent=False)
-        return jsonify(sql.update_doorUsers(content['username'], 'role', content['role'])), 200
+        return jsonify(sql.update_user(content['username'], 'role', content['role'])), 200
     else:
         return jsonify({"msg": "Forbidden"}), 403
 

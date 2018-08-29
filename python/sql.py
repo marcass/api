@@ -270,7 +270,7 @@ def setup_user(user_in, passw, role=0):
     except:
         return False
 
-def update_doorUsers(user, column, value):
+def update_user(user, column, value):
     try:
         conn, c = get_db()
         if column == 'password':
