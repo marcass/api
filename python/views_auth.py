@@ -77,9 +77,9 @@ def add_user():
                 return jsonify({'Status':'Success', 'Message':'User '+username+' successfully added'}), 200
             else:
                 # print 'fucked up with a bad username'
-    	    return jsonify({'Status':'Error', 'Message':'Adding user '+username+' failed'}), 400
+    	        return jsonify({'Status':'Error', 'Message':'Bad username'}), 400
         except:
-            print 'empty request'
+            return jsonify({'Status':'Error', 'Message':'Adding user '+username+' failed'}), 400
     else:
        return jsonify({"msg": "Forbidden"}), 403
 
@@ -96,7 +96,7 @@ def update_user_password():
     else:
         return jsonify({"msg": "Forbidden"}), 403
 
-@app.route("/auth/user/<username>", methods=['GET'])
+@app.route("/auth/user/<username>", methods=['GET', 'POST'])
 @jwt_required
 def get_user_role(username):
     '''
