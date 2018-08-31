@@ -29,15 +29,15 @@ client.switch_database(db_name)
 # client.drop_database(db_name)
 
 # setup reteniton plicy list must match index of durations
-retention_policies = ['24_hours', '7_days','2_months', '1_year', '5_years']
+retention_policies = ['24_hours', '7_days','2_months', '1_year', 'forever']
 # setup retention policy detail
 durations = {'24_hours': {'dur':'1d', 'default':True},
              '7_days': {'dur':'7d', 'default':False},
              '2_months': {'dur':'4w', 'default':False},
              '1_year': {'dur':'52w','default':False},
-             '5_years': {'dur':'INF','default':False}}
+             'forever': {'dur':'INF','default':False}}
 # orgainse graphing periods
-periods = {'hours': ['24_hours'], 'days': ['7_days', '2_months'], 'months': ['1_year'], 'years': ['5_years']}
+periods = {'hours': ['24_hours'], 'days': ['7_days', '2_months'], 'months': ['1_year'], 'years': ['forever']}
 def setup_RP(vtype, meas):
     global retention_policies
     global measurement
@@ -55,7 +55,7 @@ def setup_RP(vtype, meas):
         if in_data in RP_list:
             print 'RP already here'
         else:
-            print 'making rp for 'in_data
+            print 'making rp for '+in_data
             client.create_retention_policy(in_data, durations[i]['dur'], 1, database='sensors', default=durations[i]['default'])
     # https://influxdb-python.readthedocs.io/en/latest/api-documentation.html
     # https://docs.influxdata.com/influxdb/v1.6/guides/downsampling_and_retention/
@@ -63,7 +63,7 @@ def setup_RP(vtype, meas):
         client.query('CREATE CONTINUOUS QUERY \"%s\" ON %s BEGIN SELECT mean(%s) AS \"%s\" INTO \"%s\".\"%s\" FROM "24_hours".\"%s\" GROUP BY time(2m), * END' %(vtype+'_cq_7_days', db_name,  vtype, vtype, meas+'_7_days', meas, meas))
         client.query('CREATE CONTINUOUS QUERY \"%s\" ON %s BEGIN SELECT mean(%s) AS \"%s\" INTO \"%s\".\"%s\" FROM "24_hours".\"%s\" GROUP BY time(5m), * END' %(vtype+'_cq_2_months', db_name,  vtype, vtype, meas+'_2_months', meas, meas))
         client.query('CREATE CONTINUOUS QUERY \"%s\" ON %s BEGIN SELECT mean(%s) AS \"%s\" INTO \"%s\".\"%s\" FROM "24_hours".\"%s\" GROUP BY time(10m), * END' %(vtype+'_cq_1_year', db_name,  vtype, vtype, meas+'_1_year', meas, meas))
-        client.query('CREATE CONTINUOUS QUERY \"%s\" ON %s BEGIN SELECT mean(%s) AS \"%s\" INTO \"%s\".\"%s\" FROM "24_hours".\"%s\" GROUP BY time(20m), * END' %(vtype+'_cq_5_years', db_name,  vtype, vtype, meas+'_5_years', meas, meas))
+        client.query('CREATE CONTINUOUS QUERY \"%s\" ON %s BEGIN SELECT mean(%s) AS \"%s\" INTO \"%s\".\"%s\" FROM "24_hours".\"%s\" GROUP BY time(20m), * END' %(vtype+'_cq_forever', db_name,  vtype, vtype, meas+'_forever', meas, meas))
         print 'making cqs for '+vtype
     except:
         # already exist
@@ -83,7 +83,10 @@ def write_data(json):
     if 'type' in json:
         in_type = json['type']
     if in_type not in get_data_types(measurement):
-        setup_RP(json['type'], json['measurement'])
+    # try:
+        setup_RP(json['type'], measurement)
+    # except:
+    #     print 'RP in place for '+json['type']+' '+measurement
     sensType = json['type']
     val = json['value']
     # influx is dropping values if the arrive as truncated floates (eg 16.00 is sent as an int of 16 by arduinoJSON
@@ -124,7 +127,9 @@ def write_data(json):
     client.write_points(json_data)
     return {'Status': 'success', 'Message': 'successfully wrote data points'}
 
-def get_data_types(meas):
+def get_data_types(meas=0):
+    if not meas:
+        meas = 'things'
     # returnrs a list [light, etc]
     results = client.query('SHOW FIELD KEYS ON "sensors" FROM \"%s\"' %(meas))
     types = results.get_points()
@@ -189,16 +194,20 @@ def get_sites():
             sites.append(a['value'])
     return sites
 
-#q_dict = {'24_hours': {'rp_val':'sensorData', 'period_type': 'hours'}, '7_days': {'rp_val':'values_7d', 'period_type': 'days'}, '2_months': {'rp_val':'values_2mo', 'period_type': 'days'}, '1_year': {'rp_val':'values_1y', 'period_type': 'months'}, '5_years': {'rp_val':'values    _5y', 'period_type': 'years'}}
-q_dict = {'24_hours': {'rp_val':'sensorData', 'period_type': 'hours'}, '7_days': {'rp_val':'values_7d', 'period_type': 'days'}, '2_months': {'rp_val':'values_2mo', 'period_type': 'days'}, '1_year': {'rp_val':'values_1y', 'period_type': 'months'}, '5_years': {'rp_val':'values_5y', 'period_type': 'years'}}
+#q_dict = {'24_hours': {'rp_val':'sensorData', 'period_type': 'hours'}, '7_days': {'rp_val':'values_7d', 'period_type': 'days'}, '2_months': {'rp_val':'values_2mo', 'period_type': 'days'}, '1_year': {'rp_val':'values_1y', 'period_type': 'months'}, 'forever': {'rp_val':'values    _5y', 'period_type': 'years'}}
+q_dict = {'24_hours': {'rp_val':'sensorData', 'period_type': 'hours'}, '7_days': {'rp_val':'values_7d', 'period_type': 'days'}, '2_months': {'rp_val':'values_2mo', 'period_type': 'days'}, '1_year': {'rp_val':'values_1y', 'period_type': 'months'}, 'forever': {'rp_val':'values_5y', 'period_type': 'years'}}
 def custom_data(payload):
-    print payload
+    if 'measurement' in payload:
+        ret_pol = payload['measurement']+'_'+payload['range']
+    else:
+        ret_pol = 'things_'+payload['range']
+    # print payload
     # {'traces':traces, 'range':range, 'period':period, 'site': values.site}
     # try:
     arg_dict = {q_dict[payload['range']]['period_type']: int(payload['period'])}
-    print arg_dict
+    # print arg_dict
     timestamp = (datetime.datetime.utcnow() - datetime.timedelta(**arg_dict)).strftime("%Y-%m-%dT%H:%M:%S.%f000Z")
-    print timestamp
+    # print timestamp
     # except:
     #     timestamp = (datetime.datetime.utcnow() - datetime.timedelta(hours=1)).strftime("%Y-%m-%dT%H:%M:%S.%f000Z")
     res = []
@@ -220,13 +229,12 @@ def custom_data(payload):
                 print site, val_type, sensor
         except:
             print('fuckup.')
-        results = client.query('SELECT * FROM \"%s\"."things" WHERE time > \'%s\' AND time < now() AND "type" = \'%s\' AND "sensorID" = \'%s\' AND "site" = \'%s\'' %(payload['range'], timestamp, val_type, sensor, site))
+        results = client.query('SELECT * FROM \"%s\"."things" WHERE time > \'%s\' AND time < now() AND "type" = \'%s\' AND "sensorID" = \'%s\' AND "site" = \'%s\'' %(ret_pol, timestamp, val_type, sensor, site))
         #results = client.query('SELECT * FROM \"%s\"."things" WHERE time > now() - \'%s\' AND "type" = \'%s\' AND "sensorID" = \'%s\' AND "site" = \'%s\'' %(payload['range'], timestamp, val_type, sensor, site))
         dat = results.get_points()
         times = []
         values = []
         if (val_type == 'light'):
-            print 'matched'
             if not thousands:
                 layout.update({'yaxis2': {'title': 'Light', 'overlaying': 'y', 'side': 'right'}})
             thousands = True
@@ -282,6 +290,10 @@ def custom_ax(payload):
     # setup layout of graph
     layout = {'title': 'House data'}
     site = payload['site']
+    if 'measurement' in payload:
+        ret_pol = payload['measurement']+'_'+payload['range']
+    else:
+        ret_pol = 'things_'+payload['range']
     for a in payload['traces']:
         title = a['label']
         if a['yaxis'] == 'y':
@@ -307,7 +319,7 @@ def custom_ax(payload):
                 val_type = i['type']
             except:
                 print('fuckup.')
-            results = client.query('SELECT * FROM \"%s\"."things" WHERE time > \'%s\' AND time < now() AND "type" = \'%s\' AND "sensorID" = \'%s\' AND "site" = \'%s\'' %(payload['range'], timestamp, val_type, sensor, site))
+            results = client.query('SELECT * FROM \"%s\"."things" WHERE time > \'%s\' AND time < now() AND "type" = \'%s\' AND "sensorID" = \'%s\' AND "site" = \'%s\'' %(ret_pol, timestamp, val_type, sensor, site))
             #results = client.query('SELECT * FROM \"%s\"."things" WHERE time > now() - \'%s\' AND "type" = \'%s\' AND "sensorID" = \'%s\' AND "site" = \'%s\'' %(payload['range'], timestamp, val_type, sensor, site))
             dat = results.get_points()
             times = []
