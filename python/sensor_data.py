@@ -69,9 +69,15 @@ def setup_RP(vtype, meas):
         print "Failed to create CQs, as they already exist"
 
 def write_data(json):
+    # incoming format should be:
+    # json = {'measurement': 'tablename', 'tags':{'type':'meastype', 'sensorID':'sensor name', 'site': 'thissite'}, 'value':value}
     # print json
     # ensure RP's and CQ's in place for new sites
-    if json['type'] not in get_data_types():
+    if 'tags' in json:
+        in_type = json['tags']['type']
+    if 'type' in json:
+        in_type = json['type']
+    if in_type not in get_data_types():
         if 'measurement' in json:
             setup_RP(json['type'], json['measurement'])
         else:
@@ -89,31 +95,9 @@ def write_data(json):
         json_data = [
             {
                 'measurement': json['measurement'],
-                'tags': {
-                    'sensorID': json['sensor'],
-                    'site': json['group'],
-                    'type': json['type']
-                },
+                'tags': json['tags'],
                 'fields': {
-                    json['type']: val
-                },
-                'time': datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-                }
-            ]
-    if 'state' in json:
-        # boiler data
-        #print 'adding: '+str(json)
-        json_data = [
-            {
-                'measurement': 'things',
-                'tags': {
-                    'sensorID': json['sensor'],
-                    'site': json['group'],
-                    'type': json['type'],
-                    'state': json['state']
-                },
-                'fields': {
-                    json['type']: val
+                    in_type: val
                 },
                 'time': datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
                 }
@@ -130,7 +114,7 @@ def write_data(json):
                     'type': json['type']
                 },
                 'fields': {
-                    json['type']: val
+                    in_type: val
                 },
                 'time': datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
                 }
