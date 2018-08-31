@@ -51,11 +51,12 @@ def setup_RP(vtype, meas):
     # except:
     #     print 'No retention polices here'
     for i in retention_policies:
-        if i in RP_list:
+        in_data = meas+'_'+i
+        if in_data in RP_list:
             print 'RP already here'
         else:
-            print 'making rp for '+i
-            client.create_retention_policy(meas+'_'+i, durations[i]['dur'], 1, database='sensors', default=durations[i]['default'])
+            print 'making rp for 'in_data
+            client.create_retention_policy(in_data, durations[i]['dur'], 1, database='sensors', default=durations[i]['default'])
     # https://influxdb-python.readthedocs.io/en/latest/api-documentation.html
     # https://docs.influxdata.com/influxdb/v1.6/guides/downsampling_and_retention/
     try:
