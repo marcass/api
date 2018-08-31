@@ -55,14 +55,14 @@ def setup_RP(vtype, meas):
             print 'RP already here'
         else:
             print 'making rp for '+i
-            client.create_retention_policy(i, durations[i]['dur'], 1, database='sensors', default=durations[i]['default'])
+            client.create_retention_policy(meas+'_'+i, durations[i]['dur'], 1, database='sensors', default=durations[i]['default'])
     # https://influxdb-python.readthedocs.io/en/latest/api-documentation.html
     # https://docs.influxdata.com/influxdb/v1.6/guides/downsampling_and_retention/
     try:
-        client.query('CREATE CONTINUOUS QUERY \"%s\" ON %s BEGIN SELECT mean(%s) AS \"%s\" INTO "7_days".\"%s\" FROM "24_hours".\"%s\" GROUP BY time(2m), * END' %(vtype+'_cq_7_days', db_name,  vtype, vtype, meas, meas))
-        client.query('CREATE CONTINUOUS QUERY \"%s\" ON %s BEGIN SELECT mean(%s) AS \"%s\" INTO "2_months".\"%s\" FROM "24_hours".\"%s\" GROUP BY time(5m), * END' %(vtype+'_cq_2_months', db_name,  vtype, vtype, meas, meas))
-        client.query('CREATE CONTINUOUS QUERY \"%s\" ON %s BEGIN SELECT mean(%s) AS \"%s\" INTO "1_year".\"%s\" FROM "24_hours".\"%s\" GROUP BY time(10m), * END' %(vtype+'_cq_1_year', db_name,  vtype, vtype, meas, meas))
-        client.query('CREATE CONTINUOUS QUERY \"%s\" ON %s BEGIN SELECT mean(%s) AS \"%s\" INTO "5_years".\"%s\" FROM "24_hours".\"%s\" GROUP BY time(20m), * END' %(vtype+'_cq_5_years', db_name,  vtype, vtype, meas, meas))
+        client.query('CREATE CONTINUOUS QUERY \"%s\" ON %s BEGIN SELECT mean(%s) AS \"%s\" INTO \"%s\".\"%s\" FROM "24_hours".\"%s\" GROUP BY time(2m), * END' %(vtype+'_cq_7_days', db_name,  vtype, vtype, meas+'_7_days', meas, meas))
+        client.query('CREATE CONTINUOUS QUERY \"%s\" ON %s BEGIN SELECT mean(%s) AS \"%s\" INTO \"%s\".\"%s\" FROM "24_hours".\"%s\" GROUP BY time(5m), * END' %(vtype+'_cq_2_months', db_name,  vtype, vtype, meas+'_2_months', meas, meas))
+        client.query('CREATE CONTINUOUS QUERY \"%s\" ON %s BEGIN SELECT mean(%s) AS \"%s\" INTO \"%s\".\"%s\" FROM "24_hours".\"%s\" GROUP BY time(10m), * END' %(vtype+'_cq_1_year', db_name,  vtype, vtype, meas+'_1_year', meas, meas))
+        client.query('CREATE CONTINUOUS QUERY \"%s\" ON %s BEGIN SELECT mean(%s) AS \"%s\" INTO \"%s\".\"%s\" FROM "24_hours".\"%s\" GROUP BY time(20m), * END' %(vtype+'_cq_5_years', db_name,  vtype, vtype, meas+'_5_years', meas, meas))
         print 'making cqs for '+vtype
     except:
         # already exist
@@ -73,15 +73,16 @@ def write_data(json):
     # json = {'measurement': 'tablename', 'tags':{'type':'meastype', 'sensorID':'sensor name', 'site': 'thissite'}, 'value':value}
     # print json
     # ensure RP's and CQ's in place for new sites
+    if 'measurement' in json:
+        measurement = json['measurement']
+    else:
+        measurement = 'things'
     if 'tags' in json:
         in_type = json['tags']['type']
     if 'type' in json:
         in_type = json['type']
-    if in_type not in get_data_types():
-        if 'measurement' in json:
-            setup_RP(json['type'], json['measurement'])
-        else:
-            setup_RP(json['type'],'things')
+    if in_type not in get_data_types(measurement):
+        setup_RP(json['type'], json['measurement'])
     sensType = json['type']
     val = json['value']
     # influx is dropping values if the arrive as truncated floates (eg 16.00 is sent as an int of 16 by arduinoJSON
@@ -122,9 +123,9 @@ def write_data(json):
     client.write_points(json_data)
     return {'Status': 'success', 'Message': 'successfully wrote data points'}
 
-def get_data_types():
+def get_data_types(meas):
     # returnrs a list [light, etc]
-    results = client.query('SHOW FIELD KEYS ON "sensors" FROM "things"')
+    results = client.query('SHOW FIELD KEYS ON "sensors" FROM \"%s\"' %(meas))
     types = results.get_points()
     types_list = []
     for i in types:
@@ -150,7 +151,6 @@ def get_type_sensors(Type):
     return traces_list
 
 def get_all_sensors():
-    types = get_data_types()
     sites = get_sites()
     sensors_list = []
     for i in sites:
