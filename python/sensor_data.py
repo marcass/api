@@ -35,11 +35,10 @@ durations = {'24_hours': {'dur':'1d', 'default':True},
              '7_days': {'dur':'7d', 'default':False},
              '2_months': {'dur':'4w', 'default':False},
              '1_year': {'dur':'52w','default':False},
-             '5_years': {'dur':'260w','default':False}}
+             '5_years': {'dur':'INF','default':False}}
 # orgainse graphing periods
 periods = {'hours': ['24_hours'], 'days': ['7_days', '2_months'], 'months': ['1_year'], 'years': ['5_years']}
-# def setup_RP():
-def setup_RP(meas):
+def setup_RP(vtype, meas):
     global retention_policies
     global measurement
     RP_list = []
@@ -60,22 +59,23 @@ def setup_RP(meas):
     # https://influxdb-python.readthedocs.io/en/latest/api-documentation.html
     # https://docs.influxdata.com/influxdb/v1.6/guides/downsampling_and_retention/
     try:
-        client.query('CREATE CONTINUOUS QUERY \"%s\" ON %s BEGIN SELECT mean(%s) AS \"%s\" INTO "7_days"."things" FROM "24_hours"."things" GROUP BY time(5m), * END' %(meas+'_cq_7_days', db_name,  meas, meas))
-        client.query('CREATE CONTINUOUS QUERY \"%s\" ON %s BEGIN SELECT mean(%s) AS \"%s\" INTO "2_months"."things" FROM "24_hours"."things" GROUP BY time(10m), * END' %(meas+'_cq_2_months', db_name,  meas, meas))
-        client.query('CREATE CONTINUOUS QUERY \"%s\" ON %s BEGIN SELECT mean(%s) AS \"%s\" INTO "1_year"."things" FROM "24_hours"."things" GROUP BY time(20m), * END' %(meas+'_cq_1_year', db_name,  meas, meas))
-        client.query('CREATE CONTINUOUS QUERY \"%s\" ON %s BEGIN SELECT mean(%s) AS \"%s\" INTO "5_years"."things" FROM "24_hours"."things" GROUP BY time(30m), * END' %(meas+'_cq_5_years', db_name,  meas, meas))
-        print 'making cqs for '+meas
+        client.query('CREATE CONTINUOUS QUERY \"%s\" ON %s BEGIN SELECT mean(%s) AS \"%s\" INTO "7_days".\"%s\" FROM "24_hours".\"%s\" GROUP BY time(2m), * END' %(vtype+'_cq_7_days', db_name,  vtype, vtype, meas, meas))
+        client.query('CREATE CONTINUOUS QUERY \"%s\" ON %s BEGIN SELECT mean(%s) AS \"%s\" INTO "2_months".\"%s\" FROM "24_hours".\"%s\" GROUP BY time(5m), * END' %(vtype+'_cq_2_months', db_name,  vtype, vtype, meas, meas))
+        client.query('CREATE CONTINUOUS QUERY \"%s\" ON %s BEGIN SELECT mean(%s) AS \"%s\" INTO "1_year".\"%s\" FROM "24_hours".\"%s\" GROUP BY time(10m), * END' %(vtype+'_cq_1_year', db_name,  vtype, vtype, meas, meas))
+        client.query('CREATE CONTINUOUS QUERY \"%s\" ON %s BEGIN SELECT mean(%s) AS \"%s\" INTO "5_years".\"%s\" FROM "24_hours".\"%s\" GROUP BY time(20m), * END' %(vtype+'_cq_5_years', db_name,  vtype, vtype, meas, meas))
+        print 'making cqs for '+vtype
     except:
         # already exist
         print "Failed to create CQs, as they already exist"
-
-# setup_RP()
 
 def write_data(json):
     # print json
     # ensure RP's and CQ's in place for new sites
     if json['type'] not in get_data_types():
-        setup_RP(json['type'])
+        if 'measurement' in json:
+            setup_RP(json['type'], json['measurement'])
+        else:
+            setup_RP(json['type'],'things')
     sensType = json['type']
     val = json['value']
     # influx is dropping values if the arrive as truncated floates (eg 16.00 is sent as an int of 16 by arduinoJSON
@@ -84,6 +84,22 @@ def write_data(json):
         val = float(json['value'])
         if val < -100.0:
             return {'Status': 'Error', 'Message': 'Value of '+str(val)+' out of range'}
+    # tank data
+    if 'measurement' in json:
+        json_data = [
+            {
+                'measurement': json['measurement'],
+                'tags': {
+                    'sensorID': json['sensor'],
+                    'site': json['group'],
+                    'type': json['type']
+                },
+                'fields': {
+                    json['type']: val
+                },
+                'time': datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+                }
+            ]
     if 'state' in json:
         # boiler data
         #print 'adding: '+str(json)
