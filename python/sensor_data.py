@@ -84,14 +84,13 @@ def write_data(json):
         in_type = json['type']
     if in_type not in get_data_types(measurement):
     # try:
-        setup_RP(json['type'], measurement)
+        setup_RP(in_type, measurement)
     # except:
     #     print 'RP in place for '+json['type']+' '+measurement
-    sensType = json['type']
     val = json['value']
     # influx is dropping values if the arrive as truncated floates (eg 16.00 is sent as an int of 16 by arduinoJSON
     # and influx drops point as it won't stuff an int into a float column)
-    if (sensType == 'temp') or (sensType == 'humidity'):
+    if (in_type == 'temp') or (in_type == 'humidity'):
         val = float(json['value'])
         if val < -100.0:
             return {'Status': 'Error', 'Message': 'Value of '+str(val)+' out of range'}
