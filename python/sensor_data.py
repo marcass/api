@@ -82,10 +82,10 @@ def write_data(json):
     if 'type' in json:
         in_type = json['type']
     if in_type not in get_data_types(measurement):
-    # try:
-        setup_RP(in_type, measurement)
-    # except:
-    #     print 'RP in place for '+json['type']+' '+measurement
+        try:
+            setup_RP(in_type, measurement)
+        except:
+            print 'RP in place for '+json['type']+' '+measurement
     val = json['value']
     # influx is dropping values if the arrive as truncated floates (eg 16.00 is sent as an int of 16 by arduinoJSON
     # and influx drops point as it won't stuff an int into a float column)
@@ -188,29 +188,35 @@ def get_measurements():
 
 def get_sites():
     sites = []
+    measurements = []
+    ret_sites = []
     results = client.query('SHOW TAG VALUES ON "sensors" WITH KEY = site')
     meas_types = results.get_points()
+    # print meas_types
     for a in meas_types:
+        # print a
+        # res = {'sitename': '', 'measurement': ''}
         if a['value'] not in sites:
             sites.append(a['value'])
-    return sites
+            # res['sitename'] = a['value']
+            get_meas = client.query('SHOW MEASUREMENTS ON "sensors" WHERE "site" = \'%s\'' %(a['value']))
+            meas_out = get_meas.get_points()
+            for i in meas_out:
+                # if res['measurement'] == '':
+                measurements.append(i['name'])
+                    # res['measurement'] = i['name']
+            # ret_sites.append(res)
+            #     print a
+    # print ret_sites
+    # print [sites, measurements]
+    return [sites, measurements]
 
 #q_dict = {'24_hours': {'rp_val':'sensorData', 'period_type': 'hours'}, '7_days': {'rp_val':'values_7d', 'period_type': 'days'}, '2_months': {'rp_val':'values_2mo', 'period_type': 'days'}, '1_year': {'rp_val':'values_1y', 'period_type': 'months'}, 'forever': {'rp_val':'values    _5y', 'period_type': 'years'}}
 q_dict = {'24_hours': {'rp_val':'sensorData', 'period_type': 'hours'}, '7_days': {'rp_val':'values_7d', 'period_type': 'days'}, '2_months': {'rp_val':'values_2mo', 'period_type': 'days'}, '1_year': {'rp_val':'values_1y', 'period_type': 'months'}, 'forever': {'rp_val':'values_5y', 'period_type': 'years'}}
 def custom_data(payload):
-    if 'measurement' in payload:
-        ret_pol = payload['measurement']+'_'+payload['range']
-    else:
-        ret_pol = 'things_'+payload['range']
-    # print payload
-    # {'traces':traces, 'range':range, 'period':period, 'site': values.site}
-    # try:
+    ret_pol = payload['range']
     arg_dict = {q_dict[payload['range']]['period_type']: int(payload['period'])}
-    # print arg_dict
     timestamp = (datetime.datetime.utcnow() - datetime.timedelta(**arg_dict)).strftime("%Y-%m-%dT%H:%M:%S.%f000Z")
-    # print timestamp
-    # except:
-    #     timestamp = (datetime.datetime.utcnow() - datetime.timedelta(hours=1)).strftime("%Y-%m-%dT%H:%M:%S.%f000Z")
     res = []
     # setup layout of graph
     thousands = False
@@ -231,7 +237,6 @@ def custom_data(payload):
         except:
             print('fuckup.')
         results = client.query('SELECT * FROM \"%s\"."things" WHERE time > \'%s\' AND time < now() AND "type" = \'%s\' AND "sensorID" = \'%s\' AND "site" = \'%s\'' %(ret_pol, timestamp, val_type, sensor, site))
-        #results = client.query('SELECT * FROM \"%s\"."things" WHERE time > now() - \'%s\' AND "type" = \'%s\' AND "sensorID" = \'%s\' AND "site" = \'%s\'' %(payload['range'], timestamp, val_type, sensor, site))
         dat = results.get_points()
         times = []
         values = []
@@ -291,10 +296,7 @@ def custom_ax(payload):
     # setup layout of graph
     layout = {'title': 'House data'}
     site = payload['site']
-    if 'measurement' in payload:
-        ret_pol = payload['measurement']+'_'+payload['range']
-    else:
-        ret_pol = 'things_'+payload['range']
+    ret_pol = payload['range']
     for a in payload['traces']:
         title = a['label']
         if a['yaxis'] == 'y':
@@ -321,7 +323,6 @@ def custom_ax(payload):
             except:
                 print('fuckup.')
             results = client.query('SELECT * FROM \"%s\"."things" WHERE time > \'%s\' AND time < now() AND "type" = \'%s\' AND "sensorID" = \'%s\' AND "site" = \'%s\'' %(ret_pol, timestamp, val_type, sensor, site))
-            #results = client.query('SELECT * FROM \"%s\"."things" WHERE time > now() - \'%s\' AND "type" = \'%s\' AND "sensorID" = \'%s\' AND "site" = \'%s\'' %(payload['range'], timestamp, val_type, sensor, site))
             dat = results.get_points()
             times = []
             values = []

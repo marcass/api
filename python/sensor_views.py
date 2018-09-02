@@ -107,11 +107,24 @@ def get_sites():
     '''
     # print request.headers
     allowed = ['admin', 'sensuser']
-    if get_jwt_claims()['role'] in allowed:
-        content = request.get_json(silent=False)
+    user_data = get_jwt_claims()
+    print user_data
+    if user_data['role'] in allowed:
+        print 'allowed here'
+        # content = request.get_json(silent=False)
+        if 'sites' in user_data:
+            sites = sensors.get_sites()
+            allowed_sites = []
+            for i in user_data['sites']:
+                if i in sites[0]:
+                    loc = sites[0].index(i)
+                    allowed_sites.append({'sitename':sites[0][loc], 'measurement':sites[1][loc]})
+            return jsonify(allowed_sites), 200
+        else:
+            jsonify({"msg": "Forbidden"}), 403
         # print 'views content is:'
         # print content
-        return jsonify(sensors.get_sites()), 200
+        # return jsonify(sensors.get_sites()), 200
     else:
         return jsonify({"msg": "Forbidden"}), 403
 
