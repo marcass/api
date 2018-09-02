@@ -93,6 +93,7 @@ def list_allowed_keys():
     ["topgarage":["max", "mw", "etc"], "bottomgarage":[...]]
     '''
     allowed = ['admin']
+    # print 'jwt claimes = '+str(get_jwt_claims())
     if get_jwt_claims()['role'] in allowed:
         return jsonify(sql.get_allowed()), 200
     else:
@@ -164,34 +165,21 @@ def add_user():
     else:
         return jsonify({"msg": "Forbidden"}), 403
 
-# @app.route("/user/<username>", methods=['DELETE',])
+# @app.route("/auth/user/<username>", methods=['GET','POST'])
 # @jwt_required
-# def remove_user(username):
+# def get_user_role(username):
 #     '''
-#     Remove Username in user doorUsers table, and update all tables...
-#     {'username':'mw'}
+#
 #     '''
-#     allowed = ['admin']
+#     allowed = ['admin', 'user', 'sensuser']
 #     if get_jwt_claims()['role'] in allowed:
-#         return jsonify(sql.delete_user(username)), 200
+#         content = request.get_json(silent=False)
+#         print content
+#         password = content['password']
+#         #password = request.json.get('password', None)
+#         return jsonify(sql.auth_user(username, password)), 200
 #     else:
 #         return jsonify({"msg": "Forbidden"}), 403
-
-@app.route("/auth/user/<username>", methods=['GET','POST'])
-@jwt_required
-def get_user_role(username):
-    '''
-
-    '''
-    allowed = ['admin', 'user', 'sensuser']
-    if get_jwt_claims()['role'] in allowed:
-        content = request.get_json(silent=False)
-        print content
-        password = content['password']
-        #password = request.json.get('password', None)
-        return jsonify(sql.auth_user(username, password)), 200
-    else:
-        return jsonify({"msg": "Forbidden"}), 403
 
 @app.route("/user/data/<username>", methods=['GET',])
 @jwt_required

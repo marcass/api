@@ -6,6 +6,8 @@ from dateutil import parser
 from passlib.hash import pbkdf2_sha256
 import datetime
 from datetime import timedelta
+import ast
+import json
 
 users_db = '/home/marcus/git/api/python/door_database.db'
 tz = 'Pacific/Auckland'
@@ -105,9 +107,17 @@ def auth_user(thisuser, passw):
         role = ret[0][2]
         if (pbkdf2_sha256.verify(passw, pw_hash)):
             status = 'passed'
+            try:
+                role = json.loads(role)
+                if 'sites' in role:
+                    ret_dict = {'status': status, 'role': role['role'], 'sites': role['sites']}
+                else:
+                    ret_dict = {'status': status, 'role': role['role']}
+            except:
+                print 'Not a json role'
+                ret_dict = {'status': status, 'role': role}
         else:
-            status = 'failed'
-        ret_dict = {'status': status, 'role': role}
+            ret_dict = {'status': 'failed', 'role': 'undefined'}
     except:
         ret_dict = {'status': 'exception', 'role': 'undefined'}
     #print ret_dict
@@ -165,11 +175,22 @@ def fetch_user_data(user_in):
         res = ['','','','','']
     c.execute("SELECT role FROM userAuth WHERE username=?", (user_in,))
     role = c.fetchall()[0]
+    # print role[0]
+    # print type(role[0])
+    doors = []
     try:
-        c.execute("SELECT door FROM canOpen WHERE userallowed=?", (user_in,))
-        doors =  [i[0] for i in c.fetchall()]
+        role = json.loads(role[0])
+        if 'sites' in role:
+            if 'doors' in role['sites']:
+                c.execute("SELECT door FROM canOpen WHERE userallowed=?", (user_in,))
+                doors =  [i[0] for i in c.fetchall()]
     except:
-        doors = []
+        print 'not a json object'
+        try:
+            c.execute("SELECT door FROM canOpen WHERE userallowed=?", (user_in,))
+            doors =  [i[0] for i in c.fetchall()]
+        except:
+            print 'Not a door user'
     ret = ({'role': role, 'username': user_in, 'keycode': res[1], 'enabled': res[2], 'times' : {'start':res[3][:-3].replace(' ','T')+'Z','end':res[4][:-3].replace(' ','T')+'Z'}, 'doors':doors})
     return ret
 
@@ -180,6 +201,7 @@ def get_all_users():
     ret = []
     for user_in in users:
         ret.append(fetch_user_data(user_in))
+    # print 'user list = '+str(ret)
     return ret
 
 def get_doorstatus():
@@ -254,21 +276,25 @@ def get_doorlog(door, resp):
 ############  Write data ########################
 def setup_user(user_in, passw, role=0):
     conn, c = get_db()
-    # print user_in
-    # print passw
-    # print role
-    try:
-        if user_in == 'burner':
-            role = 'burner'
-        if role == 0:
-            role = 'user'
-        pw_hash = pbkdf2_sha256.hash(passw)
-        #c.execute("SELECT * FROM userAuth")
-        c.execute("INSERT INTO userAuth VALUES (?,?,?)", (user_in, pw_hash, role))
-        conn.commit()
-        return True
-    except:
-        return False
+    print user_in
+    print passw
+    print role
+    # try:
+    if user_in == 'burner':
+        role = 'burner'
+        # role = {'role': 'burner'}
+    if role == 0:
+        # role = 'user'
+        role = {'role': 'user'}
+    role = json.dumps(role)
+    print 'string role = '+role
+    pw_hash = pbkdf2_sha256.hash(passw)
+    #c.execute("SELECT * FROM userAuth")
+    c.execute("INSERT INTO userAuth VALUES (?,?,?)", (user_in, pw_hash, role))
+    conn.commit()
+    return True
+    # except:
+    #     return False
 
 def update_user(user, column, value):
     try:
@@ -279,6 +305,10 @@ def update_user(user, column, value):
             conn.commit()
             return {'Status': 'Success', 'Message': column+' updated successfully'}
         if column == 'role':
+            try:
+                value = json.dumps(value)
+            except:
+                print 'Not a json formatted role'
             c.execute("UPDATE userAuth SET role=? WHERE username=?", (value, user))
             conn.commit()
             return {'Status': 'Success', 'Message': column+' updated successfully'}
