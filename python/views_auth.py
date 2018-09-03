@@ -78,14 +78,11 @@ def add_user():
     Add a new user to auth table
     '''
     allowed = ['admin']
-    print 'jwt claims are '+str(get_jwt_claims())
     if get_jwt_claims()['role'] in allowed:
         try:
             username = request.json.get('username', None)
             password = request.json.get('password', None)
             role = request.json.get('role', None)
-            # print username
-            # print password
             if sql.setup_user(username, password, role):
                 return jsonify({'Status':'Success', 'Message':'User '+username+' successfully added'}), 200
             else:

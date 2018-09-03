@@ -108,9 +108,7 @@ def get_sites():
     # print request.headers
     allowed = ['admin', 'sensuser']
     user_data = get_jwt_claims()
-    print user_data
     if user_data['role'] in allowed:
-        print 'allowed here'
         # content = request.get_json(silent=False)
         if 'sites' in user_data:
             sites = sensors.get_sites()
