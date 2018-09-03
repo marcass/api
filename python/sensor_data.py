@@ -134,8 +134,6 @@ def get_data_types(meas=0):
     types = results.get_points()
     types_list = []
     for i in types:
-        if meas == 'tanks':
-            print i
         if i not in types_list:
             types_list.append(i['fieldKey'])
     return types_list
