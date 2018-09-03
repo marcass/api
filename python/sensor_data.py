@@ -165,9 +165,9 @@ def get_all_sensors():
         sensors_list = sensors_list + get_sensorIDs(i)
     return sensors_list
 
-def get_sensorIDs(site):
+def get_sensorIDs(site, meas=0):
     # site is a list of sites, this returns sensor id's wiht emasurement in a site
-    types = get_data_types()
+    types = get_data_types(meas=0)
     ret = []
     for i in types:
         out = client.query('SHOW TAG VALUES ON "sensors" WITH KEY = sensorID WHERE "type" = \'%s\' AND "site" = \'%s\'' %(i, site))

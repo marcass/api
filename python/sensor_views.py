@@ -145,7 +145,7 @@ def get_types():
 @jwt_required
 def get_site_data(site):
     '''
-    Get a site data keys
+    Get a site data keys without specifying measurement
     '''
     # print request.headers
     allowed = ['admin', 'sensuser']
@@ -154,6 +154,22 @@ def get_site_data(site):
         # print 'views content is:'
         # print content
         return jsonify(sensors.get_sensorIDs(site)), 200
+    else:
+        return jsonify({"msg": "Forbidden"}), 403
+
+@app.route("/data/values/site/<measurement>/<site>", methods=['GET',])
+@jwt_required
+def get_meas_site_data(measurement, site):
+    '''
+    Get a site data keys with a specified measurement
+    '''
+    # print request.headers
+    allowed = ['admin', 'sensuser']
+    if get_jwt_claims()['role'] in allowed:
+        # content = request.get_json(silent=False)
+        # print 'views content is:'
+        # print content
+        return jsonify(sensors.get_sensorIDs(site, measurement)), 200
     else:
         return jsonify({"msg": "Forbidden"}), 403
 
