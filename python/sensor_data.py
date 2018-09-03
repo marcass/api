@@ -129,12 +129,12 @@ def write_data(json):
         return {'Status': 'failed', 'Message': 'exception'}
 
 def get_data_types(meas=0):
-    print 'meas = '+str(meas)
-    if meas == 0:
-        print 'No measurement specified'
-        meas = 'things'
-    else:
-        print 'We have a measurement = '+str(meas)
+    # print 'meas = '+str(meas)
+    # if meas == 0:
+    #     print 'No measurement specified'
+    #     meas = 'things'
+    # else:
+    #     print 'We have a measurement = '+str(meas)
     # returnrs a list [light, etc]
     results = client.query('SHOW FIELD KEYS ON "sensors" FROM \"%s\"' %(meas))
     types = results.get_points()
@@ -170,7 +170,12 @@ def get_all_sensors():
     return sensors_list
 
 def get_sensorIDs(site, meas=0):
-    # site is a list of sites, this returns sensor id's wiht emasurement in a site
+    print 'meas = '+str(meas)
+    if meas == 0:
+        print 'No measurement specified'
+        meas = 'things'
+    else:
+        print 'We have a measurement = '+str(meas)
     types = get_data_types(meas=0)
     ret = []
     for i in types:
