@@ -166,12 +166,8 @@ def get_all_sensors():
     return sensors_list
 
 def get_sensorIDs(site, meas=0):
-    print 'meas = '+str(meas)
     if meas == 0:
-        print 'No measurement specified'
         meas = 'things'
-    else:
-        print 'We have a measurement = '+str(meas)
     types = get_data_types(meas)
     ret = []
     for i in types:
@@ -241,7 +237,11 @@ def custom_data(payload):
                 print site, val_type, sensor
         except:
             print('fuckup.')
-        results = client.query('SELECT * FROM \"%s\"."things" WHERE time > \'%s\' AND time < now() AND "type" = \'%s\' AND "sensorID" = \'%s\' AND "site" = \'%s\'' %(ret_pol, timestamp, val_type, sensor, site))
+        if 'measurement' in payload:
+            meas = payload['measurement']
+        else:
+            meas = 'things'
+        results = client.query('SELECT * FROM \"%s\".\"%s\" WHERE time > \'%s\' AND time < now() AND "type" = \'%s\' AND "sensorID" = \'%s\' AND "site" = \'%s\'' %(ret_pol, meas, timestamp, val_type, sensor, site))
         dat = results.get_points()
         times = []
         values = []
@@ -327,7 +327,11 @@ def custom_ax(payload):
                 val_type = i['type']
             except:
                 print('fuckup.')
-            results = client.query('SELECT * FROM \"%s\"."things" WHERE time > \'%s\' AND time < now() AND "type" = \'%s\' AND "sensorID" = \'%s\' AND "site" = \'%s\'' %(ret_pol, timestamp, val_type, sensor, site))
+            if 'measurement' in payload:
+                meas = payload['measurement']
+            else:
+                meas = 'things'
+            results = client.query('SELECT * FROM \"%s\".\"%s\" WHERE time > \'%s\' AND time < now() AND "type" = \'%s\' AND "sensorID" = \'%s\' AND "site" = \'%s\'' %(ret_pol, meas, timestamp, val_type, sensor, site))
             dat = results.get_points()
             times = []
             values = []
