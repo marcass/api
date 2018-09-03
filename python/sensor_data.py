@@ -172,7 +172,7 @@ def get_sensorIDs(site, meas=0):
         meas = 'things'
     else:
         print 'We have a measurement = '+str(meas)
-    types = get_data_types(meas=0)
+    types = get_data_types(meas)
     ret = []
     for i in types:
         out = client.query('SHOW TAG VALUES ON "sensors" WITH KEY = sensorID WHERE "type" = \'%s\' AND "site" = \'%s\'' %(i, site))
