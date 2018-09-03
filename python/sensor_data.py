@@ -129,17 +129,12 @@ def write_data(json):
         return {'Status': 'failed', 'Message': 'exception'}
 
 def get_data_types(meas=0):
-    # print 'meas = '+str(meas)
-    # if meas == 0:
-    #     print 'No measurement specified'
-    #     meas = 'things'
-    # else:
-    #     print 'We have a measurement = '+str(meas)
     # returnrs a list [light, etc]
     results = client.query('SHOW FIELD KEYS ON "sensors" FROM \"%s\"' %(meas))
     types = results.get_points()
     types_list = []
     for i in types:
+        print i
         if i not in types_list:
             types_list.append(i['fieldKey'])
     return types_list
