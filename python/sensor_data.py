@@ -210,11 +210,14 @@ def get_sites():
     # print [sites, measurements]
     return [sites, measurements]
 
-#q_dict = {'24_hours': {'rp_val':'sensorData', 'period_type': 'hours'}, '7_days': {'rp_val':'values_7d', 'period_type': 'days'}, '2_months': {'rp_val':'values_2mo', 'period_type': 'days'}, '1_year': {'rp_val':'values_1y', 'period_type': 'months'}, 'forever': {'rp_val':'values    _5y', 'period_type': 'years'}}
-q_dict = {'24_hours': {'rp_val':'sensorData', 'period_type': 'hours'}, '7_days': {'rp_val':'values_7d', 'period_type': 'days'}, '2_months': {'rp_val':'values_2mo', 'period_type': 'days'}, '1_year': {'rp_val':'values_1y', 'period_type': 'months'}, 'forever': {'rp_val':'values_5y', 'period_type': 'years'}}
+q_dict = {'24_hours': {'period_type': 'hours', 'mulitplier': 1},
+          '7_days': {'period_type': 'days', 'mulitplier': 1},
+          '2_months': {'period_type': 'days', 'mulitplier': 1},
+          '1_year': {'period_type': 'days', 'mulitplier': 30},
+          'forever': {'period_type': 'weeks', 'mulitplier': 52}}
 def custom_data(payload):
     ret_pol = payload['range']
-    arg_dict = {q_dict[payload['range']]['period_type']: int(payload['period'])}
+    arg_dict = {q_dict[payload['range']]['period_type']: (int(payload['period'])*q_dict[paylaod['range']]['mulitplier'])}
     timestamp = (datetime.datetime.utcnow() - datetime.timedelta(**arg_dict)).strftime("%Y-%m-%dT%H:%M:%S.%f000Z")
     res = []
     # setup layout of graph
