@@ -130,7 +130,10 @@ def write_data(json):
 
 def get_data_types(meas=0):
     # returnrs a list [light, etc]
-    results = client.query('SHOW FIELD KEYS ON "sensors" FROM \"%s\"' %(meas))
+    if meas == 0:
+        results = client.query('SHOW FIELD KEYS ON "sensors"')
+    else:
+        results = client.query('SHOW FIELD KEYS ON "sensors" FROM \"%s\"' %(meas))
     types = results.get_points()
     types_list = []
     for i in types:
@@ -152,7 +155,7 @@ def get_type_sensors(Type):
         out = results.get_points()
         for c in out:
             traces_list.append({'site': c['value'], 'sensorID':x})
-    print traces_list
+    # print traces_list
     return traces_list
 
 def get_all_sensors():
@@ -165,25 +168,32 @@ def get_all_sensors():
 
 def get_sensorIDs(site, meas=0):
     if meas == 0:
-        meas = 'things'
-    types = get_data_types(meas)
+        types = []
+        for i in get_measurements():
+            types.append(get_data_types(i))
+    else:
+        types = get_data_types(meas)
     ret = []
     for i in types:
-        out = client.query('SHOW TAG VALUES ON "sensors" WITH KEY = sensorID WHERE "type" = \'%s\' AND "site" = \'%s\'' %(i, site))
-        sens_res = out.get_points()
-        for c in sens_res:
-            if c:
-                ret.append({'type': i, 'sensorID': c['value'], 'site': site})
+        try:
+            out = client.query('SHOW TAG VALUES ON "sensors" WITH KEY = sensorID WHERE "type" = \'%s\' AND "site" = \'%s\'' %(i, site))
+            sens_res = out.get_points()
+            for c in sens_res:
+                print {'type': i, 'sensorID': c['value'], 'site': site}
+                if c:
+                    ret.append({'type': i, 'sensorID': c['value'], 'site': site})
+        except:
+            print 'Just foolin, none of that combo here'
     return ret
 
 
 def get_measurements():
     results = client.query('SHOW MEASUREMENTS ON "sensors"')
     measurement = results.get_points()
-    types = []
+    meas = []
     for i in measurement:
-        types.append(i['name'])
-    return types
+        meas.append(i['name'])
+    return meas
 
 def get_sites():
     sites = []
@@ -217,7 +227,7 @@ q_dict = {'24_hours': {'period_type': 'hours', 'mulitplier': 1},
           'forever': {'period_type': 'weeks', 'mulitplier': 52}}
 def custom_data(payload):
     ret_pol = payload['range']
-    arg_dict = {q_dict[payload['range']]['period_type']: (int(payload['period'])*q_dict[paylaod['range']]['mulitplier'])}
+    arg_dict = {q_dict[payload['range']]['period_type']: (int(payload['period'])*q_dict[payload['range']]['mulitplier'])}
     timestamp = (datetime.datetime.utcnow() - datetime.timedelta(**arg_dict)).strftime("%Y-%m-%dT%H:%M:%S.%f000Z")
     res = []
     # setup layout of graph
