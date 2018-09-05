@@ -72,12 +72,29 @@ def setup_RP(vtype, meas):
 
 # sanitise strings to reduce sql-injection issues
 def clean(data):
+    if isinstance(data, str) or isinstance(data, unicode):
+        return re.sub('[^A-Za-z0-9\-_]+', '', data)
     if isinstance(data, dict):
         data = json.dumps(data)
-        data = re.sub('[^A-Za-z0-9\-_{}:\',+]+', '', data)
+        data = re.sub('[^A-Za-z0-9\-_{}:\',+\."\[\]]+', '', data)
         return json.loads(data)
-    if isinstance(data, str):
+
+def clean_debug(data):
+    print 'data in = '+str(data)
+    print 'type of data is '+str(type(data))
+    if isinstance(data, str) or isinstance(data, unicode):
+        print 'dirty string = '+data
+        data = re.sub('[^A-Za-z0-9\-_]+', '', data)
+        print 'cleaned string = '+data
         return re.sub('[^A-Za-z0-9\-_]+', '', data)
+    if isinstance(data, dict):
+        print 'dirty dict = '+str(data)
+        data = json.dumps(data)
+        print 'dirty dict as a string = '+data
+        data = re.sub('[^A-Za-z0-9\-_{}:\',+\."\[\]]+', '', data)
+        print 'cleaned dict string = '+data
+        return json.loads(data)
+
 
 
 def write_data(data):
@@ -110,8 +127,8 @@ def write_data(data):
     if 'measurement' in data:
         json_data = [
             {
-                'measurement': dta['measurement'],
-                'tags': dta['tags'],
+                'measurement': data['measurement'],
+                'tags': data['tags'],
                 'fields': {
                     in_type: val
                 },
@@ -125,9 +142,9 @@ def write_data(data):
             {
                 'measurement': measurement,
                 'tags': {
-                    'sensorID': dta['sensor'],
-                    'site': dta['group'],
-                    'type': dta['type']
+                    'sensorID': data['sensor'],
+                    'site': data['group'],
+                    'type': data['type']
                 },
                 'fields': {
                     in_type: val
@@ -196,7 +213,6 @@ def get_sensorIDs(site, meas=0):
             out = client.query('SHOW TAG VALUES ON "sensors" WITH KEY = sensorID WHERE "type" = \'%s\' AND "site" = \'%s\'' %(i, site))
             sens_res = out.get_points()
             for c in sens_res:
-                print {'type': i, 'sensorID': c['value'], 'site': site}
                 if c:
                     ret.append({'type': i, 'sensorID': c['value'], 'site': site})
         except:
@@ -234,7 +250,6 @@ def get_sites():
             # ret_sites.append(res)
             #     print a
     # print ret_sites
-    # print [sites, measurements]
     return [sites, measurements]
 
 q_dict = {'24_hours': {'period_type': 'hours', 'mulitplier': 1},
@@ -302,7 +317,6 @@ def start_data(payload):
     payload = clean(payload)
     try:
         arg_dict = {q_dict[payload['range']]['period_type']: payload['period']}
-        print arg_dict
         timestamp = (datetime.datetime.utcnow() - datetime.timedelta(**arg_dict)).strftime("%Y-%m-%dT%H:%M:%S.%f000Z")
     except:
         timestamp = (datetime.datetime.utcnow() - datetime.timedelta(hours=24)).strftime("%Y-%m-%dT%H:%M:%S.%f000Z")
