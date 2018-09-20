@@ -283,6 +283,8 @@ def custom_data(payload):
             print('fuckup.')
         if 'measurement' in payload:
             meas = payload['measurement']
+            if meas == '':
+                meas = 'things'
         else:
             meas = 'things'
         results = client.query('SELECT * FROM \"%s\".\"%s\" WHERE time > \'%s\' AND time < now() AND "type" = \'%s\' AND "sensorID" = \'%s\' AND "site" = \'%s\'' %(ret_pol, meas, timestamp, val_type, sensor, site))
