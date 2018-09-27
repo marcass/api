@@ -1,0 +1,15 @@
+version: '3'
+services:
+  auth-api:
+    build: "./auth_docker"
+    ports:
+     - "5001:5001"
+  sensor-api:
+    build: "./sensor_docker"
+    ports:
+      - "5002:5002"
+   door-api:
+    build: "./sensor_docker"
+    ports:
+      - "5003:5003"
+   
