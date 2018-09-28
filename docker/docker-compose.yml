@@ -27,7 +27,5 @@ services:
     ports:
       - "5003:5006"
 volumes:
-  sqlite_db: {}
-  external: true
-  influx: {}
-  external: true
+  sqlite_db:
+  influx:
