@@ -1,19 +1,25 @@
 version: '3'
 services:
   influxdb:
-    build: "./influx_docker"
+    build:
+      context: .
+      dockerfile: "influx_docker"
     ports:
-      - "8083:8083"
+      - "8086:8086"
     volumes:
-      - influx:/var/lib/inflxdb    
+      - influx:/var/lib/inflxdb
   auth-api:
-    build: "./auth_docker"
+    build:
+      context: .
+      dockerfile: "auth_docker"
     volumes:
       - sqlite_db:/home/marcus/git/api/python
     ports:
      - "5001:5004"
   sensor-api:
-    build: "./sensor_docker"
+    build:
+      context: .
+      dockerfile: "sensor_docker"
     ports:
       - "5002:5005"
    door-api:
