@@ -1,0 +1,5 @@
+paho-mqtt
+requests
+flask
+flask_jwt_extended
+flask_cors
