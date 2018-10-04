@@ -108,10 +108,15 @@ def get_sites():
     # print request.headers
     allowed = ['admin', 'sensuser']
     user_data = get_jwt_claims()
+    # print user_data
     if user_data['role'] in allowed:
         sites = sensors.get_sites()
         if user_data['role'] == 'admin':
-            return jsonify({'sitename':sites[0], 'measurement':sites[1]}), 200
+            ret = []
+            for i in sites[0]:
+                loc = sites[0].index(i)
+                ret.append({'sitename':sites[0][loc], 'measurement': sites[1][loc]})
+            return jsonify(ret), 200
         # content = request.get_json(silent=False)
         else:
             if 'sites' in user_data:
