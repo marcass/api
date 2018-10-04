@@ -239,6 +239,7 @@ def get_sites():
         # print a
         # res = {'sitename': '', 'measurement': ''}
         if a['value'] not in sites:
+            # print a['value']
             sites.append(a['value'])
             # res['sitename'] = a['value']
             get_meas = client.query('SHOW MEASUREMENTS ON "sensors" WHERE "site" = \'%s\'' %(a['value']))
@@ -250,6 +251,7 @@ def get_sites():
             # ret_sites.append(res)
             #     print a
     # print ret_sites
+    # print [sites, measurements]
     return [sites, measurements]
 
 q_dict = {'24_hours': {'period_type': 'hours', 'mulitplier': 1},
