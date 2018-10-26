@@ -107,11 +107,30 @@ def get_sites():
     '''
     # print request.headers
     allowed = ['admin', 'sensuser']
-    if get_jwt_claims()['role'] in allowed:
-        content = request.get_json(silent=False)
+    user_data = get_jwt_claims()
+    if user_data['role'] in allowed:
+        sites = sensors.get_sites()
+        if user_data['role'] == 'admin':
+            ret = []
+            for i in sites[0]:
+                loc = sites[0].index(i)
+                ret.append({'sitename':sites[0][loc], 'measurement': sites[1][loc]})
+            return jsonify(ret), 200
+        # content = request.get_json(silent=False)
+        else:
+            if 'sites' in user_data:
+                allowed_sites = []
+                for i in user_data['sites']:
+                    allowed = json.loads(i)
+                    if allowed['sitename'] in sites[0]:
+                        loc = sites[0].index(allowed['sitename'])
+                        allowed_sites.append({'sitename':sites[0][loc], 'measurement':sites[1][loc]})
+                return jsonify(allowed_sites), 200
+            else:
+                jsonify({"msg": "Forbidden"}), 403
         # print 'views content is:'
         # print content
-        return jsonify(sensors.get_sites()), 200
+        # return jsonify(sensors.get_sites()), 200
     else:
         return jsonify({"msg": "Forbidden"}), 403
 
@@ -132,7 +151,7 @@ def get_types():
 @jwt_required
 def get_site_data(site):
     '''
-    Get a site data keys
+    Get a site data keys without specifying measurement
     '''
     # print request.headers
     allowed = ['admin', 'sensuser']
@@ -141,6 +160,22 @@ def get_site_data(site):
         # print 'views content is:'
         # print content
         return jsonify(sensors.get_sensorIDs(site)), 200
+    else:
+        return jsonify({"msg": "Forbidden"}), 403
+
+@app.route("/data/values/site/<measurement>/<site>", methods=['GET',])
+@jwt_required
+def get_meas_site_data(measurement, site):
+    '''
+    Get a site data keys with a specified measurement
+    '''
+    # print request.headers
+    allowed = ['admin', 'sensuser']
+    if get_jwt_claims()['role'] in allowed:
+        # content = request.get_json(silent=False)
+        # print 'views content is:'
+        # print content
+        return jsonify(sensors.get_sensorIDs(site, measurement)), 200
     else:
         return jsonify({"msg": "Forbidden"}), 403
 
