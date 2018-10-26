@@ -286,6 +286,7 @@ def update_user(user, column, value):
             if 'time' in column:
                 #parse timestting
                 value = utc_from_string(value).strftime('%Y-%m-%dT%H:%M:%S.%fZ')
+            print 'column is '+str(column)+', value is'+str(value)
             c.execute("UPDATE doorUsers SET %s=? WHERE user=?" %(column), (value, user))
             conn.commit()
             return {'Status': 'Success', 'Message': column+' updated successfully'}
