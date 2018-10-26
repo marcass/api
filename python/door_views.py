@@ -161,6 +161,9 @@ def add_user():
             if not keycode_validation(content['keycode']):
                 return jsonify({'status':'keycode failure'}), 200
         #sql.write_userdata(content)
+        print content
+        content['enabled'] = int(content['enabled'])
+        print content
         return jsonify(sql.write_userdata(content)), 200
     else:
         return jsonify({"msg": "Forbidden"}), 403

@@ -166,6 +166,7 @@ def get_all_doors():
     return ret
 
 def fetch_user_data(user_in):
+    print 'fetch_user_data user_in = '+user_in
     conn, c = get_db()
     try:
         c.execute("SELECT * FROM doorUsers WHERE user=?", (user_in,))
@@ -316,7 +317,8 @@ def update_user(user, column, value):
             if 'time' in column:
                 #parse timestting
                 value = utc_from_string(value).strftime('%Y-%m-%dT%H:%M:%S.%fZ')
-            print 'column is '+str(column)+', value is'+str(value)
+            print 'column is '+str(column)+', value is'+str(value)+'. user is '+user
+            print type(column)
             c.execute("UPDATE doorUsers SET %s=? WHERE user=?" %(column), (value, user))
             conn.commit()
             return {'Status': 'Success', 'Message': column+' updated successfully'}
@@ -324,6 +326,9 @@ def update_user(user, column, value):
         return {'Status': 'Error', 'Message': column+' not updated'}
 
 def write_userdata(resp):
+    print 'something'
+    # print 'enabled = '+str(resp['enabled'])
+    # print 'altered enabld = '+str(int(resp['enabled']))
     utcnow = datetime.datetime.utcnow()
     conn, c = get_db()
     if (resp['role'] == 'admin') or (resp['role'] == 'user') or (resp['role'] == 'burner'):
