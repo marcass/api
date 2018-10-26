@@ -136,11 +136,13 @@ def usekey():
 @app.route("/user", methods=['POST',])
 @jwt_required
 def add_user():
+    print 'adding user'
     '''
     Add a new user to everything.
     '''
     allowed = ['admin']
     if get_jwt_claims()['role'] in allowed:
+        print 'in here'
         content = request.get_json(silent=False)
         #{"username":invalid", "keycode":"invalid", "doorlist":["topgarage","frontdoor","bottomgarage"], "enabled":"1"}
         #{"username":pell", "password":"blah","keycode":"00003", "doorlist":["topgarage","frontdoor","bottomgarage"], "enabled":"1"}
@@ -202,6 +204,7 @@ def get_user_data(username):
 @app.route("/user", methods=['PUT',])
 @jwt_required
 def update_user():
+    # print 'udpating user'
     '''
     Select Username and update in user doorUsers table. Json must contain old username
     #{"old_username":"pell", "old_keycode":"1234", "username":pell", "keycode":"00003", "timeStart":"blah", "endTime":"blah", "doorlist":["topgarage","frontdoor","bottomgarage"], "enabled":"1"}

@@ -166,7 +166,7 @@ def get_all_doors():
     return ret
 
 def fetch_user_data(user_in):
-    print 'fetch_user_data user_in = '+user_in
+    # print 'fetch_user_data user_in = '+user_in
     conn, c = get_db()
     try:
         c.execute("SELECT * FROM doorUsers WHERE user=?", (user_in,))
@@ -176,8 +176,6 @@ def fetch_user_data(user_in):
         res = ['','','','','']
     c.execute("SELECT role FROM userAuth WHERE username=?", (user_in,))
     role = c.fetchall()[0]
-    # print role[0]
-    # print type(role[0])
     doors = []
     try:
         role = json.loads(role[0])
@@ -326,14 +324,9 @@ def update_user(user, column, value):
         return {'Status': 'Error', 'Message': column+' not updated'}
 
 def write_userdata(resp):
-    print 'something'
-    # print 'enabled = '+str(resp['enabled'])
-    # print 'altered enabld = '+str(int(resp['enabled']))
     utcnow = datetime.datetime.utcnow()
     conn, c = get_db()
     if (resp['role'] == 'admin') or (resp['role'] == 'user') or (resp['role'] == 'burner'):
-        # this user can open doors
-        print 'adding door user'
         start = resp['timeStart']
         end = resp['timeEnd']
         if (start == '') or (start == None):
@@ -349,13 +342,13 @@ def write_userdata(resp):
         users_in = get_doorUser_col('user')
         if resp['username'] not in users_in:
             try:
-                if (setup_user(resp['username'], resp['password'], resp['role'])):
-                    c.execute("INSERT INTO doorUsers VALUES (?,?,?,?,?)",(resp['username'], resp['keycode'], resp['enabled'], timeStart, timeEnd))
-                    conn.commit()
-                else:
-                    return {'Status': 'Error',  'Message': 'Failed to setup user'}
+                # if (setup_user(resp['username'], resp['password'], resp['role'])):
+                c.execute("INSERT INTO doorUsers VALUES (?,?,?,?,?)",(resp['username'], resp['keycode'], resp['enabled'], timeStart, timeEnd))
+                conn.commit()
+                # else:
+                #     return {'Status': 'Error',  'Message': 'Failed to setup user'}
             except:
-                return {'Status': 'Error', 'Message': 'Failed as non-unique new user'}
+                return {'Status': 'Error', 'Message': 'Failed to setup door user'}
         else:
             c.execute("UPDATE doorUsers SET keycode=?, enabled=?, timeStart=?, timeEnd=? WHERE user=?", (resp['keycode'], resp['enabled'], timeStart, timeEnd, resp['username']))
             conn.commit()
