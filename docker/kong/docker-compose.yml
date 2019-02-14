@@ -1,4 +1,4 @@
-version: "3"
+version: "3.7"
 
 networks:
  kong-net:
@@ -11,7 +11,7 @@ services:
   #######################################
   kong-database:
     image: postgres:9.6
-    restart: always
+    restart: unless-stopped
     networks:
       - kong-net
     environment:
@@ -46,7 +46,7 @@ services:
   #######################################
   kong:
     image: kong:latest
-    restart: always
+    restart: unless-stopped
     networks:
       - kong-net
     environment:
@@ -55,7 +55,7 @@ services:
       KONG_PROXY_LISTEN_SSL: 0.0.0.0:8443
       KONG_ADMIN_LISTEN: 0.0.0.0:8001
     depends_on:
-      - kong-migration
+#      - kong-migration
       - kong-database
     healthcheck:
       test: ["CMD", "curl", "-f", "http://kong:8001"]
@@ -74,7 +74,7 @@ services:
     command: "-c prepare -a postgres -u postgresql://kong@kong-database:5432/konga_db"
     networks:
       - kong-net
-    restart: on-failure
+    restart: unless-stopped 
     links:
       - kong-database
     depends_on:
@@ -85,7 +85,7 @@ services:
   #######################################
   konga:
     image: pantsel/konga:next
-    restart: always
+    restart: unless-stopped 
     networks:
         - kong-net
     environment:
