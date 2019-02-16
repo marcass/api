@@ -1,24 +1,25 @@
+#!/usr/bin/env python3
 from flask import Flask, request, jsonify
 import json
 from init import app
 
-@app.route("/data", methods=['POST',])
-def update_data():
+@app.route("/flask/data", methods=['POST',])
+def post_test():
     '''
     Post test
     '''
-    print ("headers are:"")
+    print ("headers are:")
     print (request.headers)
     content = request.get_json(silent=False)
     print (content)
     return jsonify(content), 200
 
-@app.route("/hello", methods=['GET',])
-def update_data():
+@app.route("/flask/hello", methods=['GET',])
+def get_test():
     '''
     Get test
     '''
-    print ("headers are:"")
+    print ("headers are:")
     print (request.headers)
     content = request.get_json(silent=False)
     print (content)
@@ -142,4 +143,4 @@ def update_data():
 #     return jsonify(sensors.get_all_sensors()), 200
 
 if __name__ == "__main__":
-    app.run()
+    app.run(host= '0.0.0.0')
