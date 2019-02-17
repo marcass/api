@@ -1,0 +1,6 @@
+To test need to run the following with port 80 mapped to the host machine:
+docker run -p 80:80 -h kong-certbot-agent --network=kong_kong-net -it --rm phpdockerio/kong-certbot-agent     ./certbot-agent certs:update     --test-cert     http://kong:8001 best.nose@gmail.com skibo.duckdns.org
+
+If not testing (rather renewing) remove hte --test-cert
+Ensure service and routes set up as explained in:
+https://github.com/luispabon/kong-certbot-agent
