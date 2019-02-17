@@ -1,7 +1,7 @@
 FROM python:3.5
-COPY /home/marcus/git/api/docker/door_req.txt ./
+COPY door_req.txt .
 RUN pip install --no-cache-dir -r door_req.txt
-COPY /home/mw/git/api/python/* ./
+COPY python .
 # https://stackoverflow.com/questions/43925487/how-to-run-gunicorn-on-docker
 #need to expose to host machine
 CMD ["gunicorn", "-w", "2", "-b", "0.0.0.0:5003", "door_views:app"]

@@ -11,9 +11,9 @@ def update_data():
     Writes data to influx from remote sensor
     '''
     # print request.headers
-        content = request.get_json(silent=False)
-        # print content
-        return jsonify(sensors.write_data(content)), 200
+    content = request.get_json(silent=False)
+    # print content
+    return jsonify(sensors.write_data(content)), 200
 
 
 @app.route("/data", methods=['GET',])
