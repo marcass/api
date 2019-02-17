@@ -1,7 +1,9 @@
-FROM python:2.7
-WORKDIR /home/marcus/git/api/python
-COPY /home/marcus/git/api/docker/sensor_req.txt ./
+FROM python:3.5
+WORKDIR ./
+COPY /home/mw/git/api/docker/sensor_req.txt ./
 RUN pip install --no-cache-dir -r sensor_req.txt
-COPY . .
+COPY /home/mw/git/api/python ./
 # https://stackoverflow.com/questions/43925487/how-to-run-gunicorn-on-docker
-CMD ["gunicorn", "-w", "2", "-b", "127.0.0.1:5002", "sensor_views:app"]
+#CMD ["gunicorn", "-w", "2", "-b", "127.0.0.1:5002", "sensor_views:app"]
+#needs to listen on external interface
+CMD ["gunicorn", "-w", "2", "-b", "0.0.0.0:5002", "sensor_views:app"]

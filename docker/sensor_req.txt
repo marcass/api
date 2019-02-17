@@ -2,3 +2,4 @@ flask
 flask_jwt_extended
 influxdb
 flask_cors
+gunicorn

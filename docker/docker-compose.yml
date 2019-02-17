@@ -1,31 +1,56 @@
-version: '3'
+version: '3.7'
+
+networks:
+  influx:
+    driver: bridge
+
 services:
+
+  ##########################################
+  # Datastore
+  ##########################################
   influxdb:
-    build:
-      context: .
-      dockerfile: "influx_docker"
+    image: influxdb:latest
+    restart: unless-stopped
+    # needs a network for a container to perform backups
+    networks:
+      - influx
     ports:
       - "8086:8086"
     volumes:
-      - influx:/var/lib/inflxdb
-  auth-api:
-    build:
-      context: .
-      dockerfile: "auth_docker"
-    volumes:
-      - sqlite_db:/home/marcus/git/api/python
-    ports:
-     - "5001:5004"
+      - /mnt/influx:/var/lib/inflxdb
+
+  ##########################################
+  # API's
+  ##########################################
+  # auth-api:
+  #   build:
+  #     context: .
+  #     dockerfile: "auth_docker"
+  #   depends_on:
+  #     - influxdb
+  #   volumes:
+  #     - sqlite_db:/home/marcus/git/api/python
+  #   ports:
+  #    - "5001:5004"
   sensor-api:
     build:
       context: .
-      dockerfile: "sensor_docker"
+      dockerfile: "/home/mw/git/api/docker/sensor_docker"
+    restart: unless-stopped
+    depends_on:
+      - influxdb
     ports:
       - "5002:5005"
+
    door-api:
-    build: "./door_docker"
+    build:
+      context: .
+      dockerfile: "/home/mw/git/api/docker/door_docker"
+    restart: unless-stopped
     ports:
-      - "5003:5006"
-volumes:
-  sqlite_db:
-  influx:
+      - "5003:5003"
+
+# volumes:
+#   sqlite_db:
+#   influx:

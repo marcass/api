@@ -19,6 +19,8 @@ services:
       POSTGRES_DB: kong
     ports:
       - "5432:5432"
+    volumes:
+      - /mnt/kong/data/postgresql:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD", "pg_isready", "-U", "kong"]
       interval: 5s
