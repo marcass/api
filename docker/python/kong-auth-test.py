@@ -11,7 +11,7 @@ from init import app, jwt
 app.secret_key = '09q785349hangpoiqa5984'  # Change this!
 app.config['JWT_HEADER_TYPE'] = 'Bearer'
 
-@app.route('/auth/login', methods=['POST'])
+@app.route('/auth/login', methods=['GET', 'POST'])
 def auth():
     try:
         username = request.json.get('username', None)
@@ -19,6 +19,7 @@ def auth():
         # setup something to creat the user variable here
         print (username)
         print (password)
+        user = 'test-user'
         # assumes route setup in kong that allows a path of jwt, with a service that has un upstram path of /consumers
         r = requests.get('http://localhost:8000/jwt/'+user+'/jwt', auth=HTTPBasicAuth(username, password))
         # r = requests.post('http://kong:8000/auth/'+username, json={'username': 'auth', 'password': 'iamauth'})
