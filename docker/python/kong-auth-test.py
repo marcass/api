@@ -13,29 +13,36 @@ app.config['JWT_HEADER_TYPE'] = 'Bearer'
 
 @app.route('/auth/login', methods=['GET', 'POST'])
 def auth():
-    try:
-        username = request.json.get('username', None)
-        password = request.json.get('password', None)
-        # setup something to creat the user variable here
-        print (username)
-        print (password)
-        user = 'test-user'
-        # assumes route setup in kong that allows a path of jwt, with a service that has un upstram path of /consumers
-        r = requests.get('http://localhost:8000/jwt/'+user+'/jwt', auth=HTTPBasicAuth(username, password))
-        # r = requests.post('http://kong:8000/auth/'+username, json={'username': 'auth', 'password': 'iamauth'})
-        if r.status_code == 200:
-            print (r.text)
-            ret = {'access_token': create_access_token(identity=r.text)}
-            # , 'refresh_token': create_refresh_token(identity=user)}
-            print (ret)
-            return jsonify(ret), 200
-        else:
-            # print 'fucked up with a bad username'
-            print(r.status_code)
-            return jsonify({"msg": "Bad username or password"}), 401
-    except:
-        print ('empty request')
-        return jsonify({'Status':'Error', 'Message':'Empty request'})
+    # try:
+    content = request.get_json(silent=False)
+    print(content)
+    username = request.json.get('username', None)
+    password = request.json.get('password', None)
+    # setup something to creat the user variable here
+    print (username)
+    print (password)
+    user = 'test-user'
+    # return jsonify(content), 200
+    # assumes route setup in kong that allows a path of jwt, with a service that has un upstram path of /consumers
+    r = requests.get('http://localhost:8000/jwt-stuff/'+user+'/jwt', auth=HTTPBasicAuth(username, password))
+    # r = requests.post('http://kong:8000/auth/'+username, json={'username': 'auth', 'password': 'iamauth'})
+    if r.status_code == 200:
+        print (r.text)
+        payload = json.loads(r.text)['data'][0]
+        print (payload)
+        print (type(payload))
+        ret = {'access_token': create_access_token(identity=payload)}
+
+        # , 'refresh_token': create_refresh_token(identity=user)}
+        print (ret)
+        return jsonify(ret), 200
+    else:
+        # print 'fucked up with a bad username'
+        print(r.status_code)
+        return jsonify({"msg": "Bad username or password"}), 401
+    # except:
+    #     print ('empty request')
+    #     return jsonify({'Status':'Error', 'Message':'Empty request'})
 
 if __name__ == "__main__":
     app.run(host= '0.0.0.0')
