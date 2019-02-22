@@ -8,11 +8,23 @@ import requests
 from requests.auth import HTTPBasicAuth
 from init import app, jwt
 
-app.secret_key = '09q785349hangpoiqa5984'  # Change this!
+# app.secret_key = '09q785349hangpoiqa5984'  # Change this!
 app.config['JWT_HEADER_TYPE'] = 'Bearer'
+
+# Using the user_claims_loader, we can specify a method that will be
+# called when creating access tokens, and add these claims to the said
+# token. This method is passed the identity of who the token is being
+# created for, and must return data that is json serializable
+@jwt.user_claims_loader
+def add_claims_to_access_token(identity):
+    global key
+    return {
+        'iss': key
+    }
 
 @app.route('/auth/login', methods=['GET', 'POST'])
 def auth():
+    global key
     # try:
     content = request.get_json(silent=False)
     print(content)
@@ -54,11 +66,14 @@ def auth():
     except:
         print("couldn't get jwt detail")
         return jsonify({'Status':'Error', 'Message':'No jwt detail returned'}), 403
-    payload.update({'group': group})
     print (payload)
-    print (type(payload))
+    print(payload['secret'])
+    app.secret_key = payload['secret']
+    print(payload['key'])
+    key = payload['key']
+    user_data = {'username': username, 'group': group}
     # , 'refresh_token': create_refresh_token(identity=user)}
-    ret = {'access_token': create_access_token(identity=payload)}
+    ret = {'access_token': create_access_token(identity=user_data)}
     print (ret)
     return jsonify(ret), 200
     # except:

@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+from datetime import datetime
+from datetime import timedelta
 from flask import Flask, request, jsonify
 from flask_jwt_simple import (
     JWTManager, jwt_required, create_jwt, get_jwt_identity
@@ -10,10 +12,10 @@ from requests.auth import HTTPBasicAuth
 app = Flask(__name__)
 
 # Setup the Flask-JWT-Simple extension
-app.config['JWT_SECRET_KEY'] = 'super-secret'  # Change this!
+# app.config['JWT_SECRET_KEY'] = 'super-secret'  # Change this!
 jwt = JWTManager(app)
 
-app.config['JWT_HEADER_TYPE'] = 'Bearer'
+# app.config['JWT_HEADER_TYPE'] = 'Bearer'
 
 # Using the jwt_data_loader, we can change the values that
 # will be present in the JWTs (that are made by the
@@ -23,6 +25,7 @@ app.config['JWT_HEADER_TYPE'] = 'Bearer'
 # want them.
 @jwt.jwt_data_loader
 def add_claims_to_access_token(identity):
+    global kong_stuff
     print(identity)
     if identity == 'admin':
         roles = 'admin'
@@ -31,16 +34,17 @@ def add_claims_to_access_token(identity):
 
     now = datetime.utcnow()
     return {
-        'exp': now + current_app.config['JWT_EXPIRES'],
+        'exp': now + timedelta(minutes=60),
         'iat': now,
         'nbf': now,
-        'sub': identity,
-        'roles': roles,
-        'iss': 'skibo.duckdns.org'
+        'sub': {'username': identity},
+        'roles': kong_stuff['group'],
+        'iss': kong_stuff['key']
     }
 
 @app.route('/auth/login', methods=['GET', 'POST'])
 def auth():
+    global kong_stuff
     # try:
     content = request.get_json(silent=False)
     print(content)
@@ -79,6 +83,10 @@ def auth():
             print (r.text)
             payload = json.loads(r.text)['data'][0]
             print (payload)
+            # fetch iss string
+            kong_stuff = {'key': payload['key']}
+            # set secret
+            app.config['JWT_SECRET_KEY'] = payload['secret']
         else:
             # print 'fucked up with a bad username'
             print(r.status_code)
@@ -86,11 +94,10 @@ def auth():
     except:
         print("couldn't get jwt detail")
         return jsonify({'Status':'Error', 'Message':'No jwt detail returned'}), 403
-    payload.update({'group': group})
-    print (payload)
-    print (type(payload))
+    kong_stuff.update({'group': group})
+    print (kong_stuff)
     # , 'refresh_token': create_refresh_token(identity=user)}
-    ret = {'access_token': create_jwt(identity=payload)}
+    ret = {'access_token': create_jwt(identity=username)}
     print (ret)
     return jsonify(ret), 200
     # except:
