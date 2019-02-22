@@ -21,8 +21,7 @@ def get_test():
     '''
     print ("headers are:")
     print (request.headers)
-    content = request.get_json(silent=False)
-    print (content)
+    content = {'msg': 'This is what you get with kong'} 
     print("Hello thre konga")
     return jsonify(content), 200
 
