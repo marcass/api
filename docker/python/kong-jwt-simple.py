@@ -64,8 +64,12 @@ def auth():
         x = requests.get('http://localhost:8000/jwt-stuff/'+username+'/acls', auth=HTTPBasicAuth(username, password))
         if x.status_code == 200:
             print (x.text)
-            data = json.loads(x.text)
-            group = data['data'][0]['group']
+            data = json.loads(x.text)['data']
+            group = []
+            for i in data:
+                if i['group']:
+                    group.append(i['group'])
+            # group = data['data'][0]['group']
             print (group)
         else:
             # print 'fucked up with a bad username'
