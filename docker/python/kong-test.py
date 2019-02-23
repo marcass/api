@@ -21,14 +21,17 @@ def get_test():
     '''
     Get test
     '''
-    token = request.headers['Authorization'].split( )[1]
-    print (token)
-    claims = jwt.decode(token, verify=False)
-    print (claims)
-    roles = claims['roles']
-    print (roles)
-    username = claims['sub']['username']
-    print(username)
+    try:
+        token = request.headers['Authorization'].split( )[1]
+        print (token)
+        claims = jwt.decode(token, verify=False)
+        print (claims)
+        roles = claims['roles']
+        print (roles)
+        username = claims['sub']['username']
+        print(username)
+    except:
+        print('fuck off, no auth token given')
     content = {'msg': 'This is what you get with kong'}
     print("Hello thre konga")
     return jsonify(content), 200
