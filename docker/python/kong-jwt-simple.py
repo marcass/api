@@ -26,6 +26,7 @@ jwt = JWTManager(app)
 @jwt.jwt_data_loader
 def add_claims_to_access_token(identity):
     global kong_stuff
+    print('printing identity')
     print(identity)
     if identity == 'admin':
         roles = 'admin'
@@ -46,6 +47,7 @@ def add_claims_to_access_token(identity):
 def auth():
     global kong_stuff
     # try:
+    print(request.headers)
     content = request.get_json(silent=False)
     print(content)
     username = request.json.get('username', None)
@@ -55,14 +57,15 @@ def auth():
     if not password:
         return jsonify({"msg": "Missing password parameter"}), 400
     # setup something to creat the user variable here
-    print (username)
-    print (password)
+    # print (username)
+    # print (password)
     # user = 'test-user'
     # return jsonify(content), 200
     # get group
     try:
         x = requests.get('http://localhost:8000/jwt-stuff/'+username+'/acls', auth=HTTPBasicAuth(username, password))
         if x.status_code == 200:
+            print('group get')
             print (x.text)
             data = json.loads(x.text)['data']
             group = []
@@ -70,6 +73,7 @@ def auth():
                 if i['group']:
                     group.append(i['group'])
             # group = data['data'][0]['group']
+            print('groups')
             print (group)
         else:
             # print 'fucked up with a bad username'
@@ -84,8 +88,10 @@ def auth():
         r = requests.get('http://localhost:8000/jwt-stuff/'+username+'/jwt', auth=HTTPBasicAuth(username, password))
         # r = requests.post('http://kong:8000/auth/'+username, json={'username': 'auth', 'password': 'iamauth'})
         if r.status_code == 200:
+            print('jwt text')
             print (r.text)
             payload = json.loads(r.text)['data'][0]
+            print('json loads of jwt text')
             print (payload)
             # fetch iss string
             kong_stuff = {'key': payload['key']}
@@ -99,9 +105,11 @@ def auth():
         print("couldn't get jwt detail")
         return jsonify({'Status':'Error', 'Message':'No jwt detail returned'}), 403
     kong_stuff.update({'group': group})
+    print('kong dict')
     print (kong_stuff)
     # , 'refresh_token': create_refresh_token(identity=user)}
     ret = {'access_token': create_jwt(identity=username)}
+    print('token')
     print (ret)
     return jsonify(ret), 200
     # except:
