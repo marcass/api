@@ -21,6 +21,8 @@ def get_test():
     '''
     Get test
     '''
+    print ("headers are:")
+    print (request.headers)
     try:
         token = request.headers['Authorization'].split( )[1]
         print (token)
