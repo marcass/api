@@ -4,6 +4,7 @@ from flask import Flask, request, jsonify
 import creds
 import json
 import sensor_data as sensors
+import test_data
 from init import app, jwt
 from flask_jwt_extended import jwt_required, \
     get_jwt_identity, get_jwt_claims
@@ -25,6 +26,21 @@ def update_data():
         return jsonify(sensors.write_data(content)), 200
     else:
         return jsonify({"msg": "Forbidden"}), 403
+
+@app.route("/data/blah", methods=['POST',])
+@jwt_required
+def update_data_test():
+    '''
+    Writes print for debugging
+    '''
+    # print request.headers
+    # allowed = ['sensor', 'python']
+    # if get_jwt_claims()['role'] in allowed:
+    content = request.get_json(silent=False)
+    print content
+    return jsonify(test_data.write_data(content)), 200
+    # else:
+    #     return jsonify({"msg": "Forbidden"}), 403
 
 @app.route("/data", methods=['GET',])
 @jwt_required
