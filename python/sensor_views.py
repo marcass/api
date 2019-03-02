@@ -4,7 +4,6 @@ from flask import Flask, request, jsonify
 import creds
 import json
 import sensor_data as sensors
-import test_data
 from init import app, jwt
 from flask_jwt_extended import jwt_required, \
     get_jwt_identity, get_jwt_claims
@@ -27,20 +26,29 @@ def update_data():
     else:
         return jsonify({"msg": "Forbidden"}), 403
 
-@app.route("/data/blah", methods=['POST',])
+@app.route("/data/tanks", methods=['POST',])
 @jwt_required
-def update_data_test():
+def post_test():
     '''
-    Writes print for debugging
+    Post test
     '''
-    # print request.headers
-    # allowed = ['sensor', 'python']
-    # if get_jwt_claims()['role'] in allowed:
-    content = request.get_json(silent=False)
-    print content
-    return jsonify(test_data.write_data(content)), 200
-    # else:
-    #     return jsonify({"msg": "Forbidden"}), 403
+    print "headers are:"
+    print request.headers
+    post_data = request.get_data()
+    print post_data
+    try:
+        if 'PY' in post_data:
+            print 'valid string'
+            info = post_data.split(";")
+            tank = info[1]
+            dist = info[2]
+            volt = info[3]
+            content = {'tank': tank, 'dist': dist, 'volt' : volt}
+            print content
+    except:
+        print 'oops '+ str(info)
+        content = {'msg': info}
+    return jsonify(content), 200
 
 @app.route("/data", methods=['GET',])
 @jwt_required
