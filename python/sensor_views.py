@@ -26,28 +26,40 @@ def update_data():
     else:
         return jsonify({"msg": "Forbidden"}), 403
 
+counter = 0
+def removeNonAscii(s):
+    return "".join(i for i in s if ord(i)<128)
+
 @app.route("/data/tanks", methods=['POST',])
 @jwt_required
 def post_test():
+    global counter
     '''
     Post test
     '''
-    print "headers are:"
-    print request.headers
+    counter += 1
+#    print "headers are:"
+#    print request.headers
     post_data = request.get_data()
-    print post_data
+#    print post_data
     try:
-        if 'PY' in post_data:
-            print 'valid string'
+        data = removeNonAscii(post_data)
+#        print data
+        payload = json.loads(data)
+#        print payload
+#        print type(payload)
+        if 'PY' in payload['value']:
+            #print 'valid string'
             info = post_data.split(";")
             tank = info[1]
             dist = info[2]
             volt = info[3]
-            content = {'tank': tank, 'dist': dist, 'volt' : volt}
-            print content
+            content = {'site': payload['site'], 'tank': tank, 'dist': dist, 'volt' : volt}
+            #print content
     except:
-        print 'oops '+ str(info)
-        content = {'msg': info}
+        print 'oops '
+        #content = {'msg': 'excepton'}
+    print 'Packet number ' + str(counter)
     return jsonify(content), 200
 
 @app.route("/data", methods=['GET',])
