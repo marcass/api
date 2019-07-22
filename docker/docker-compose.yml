@@ -17,6 +17,7 @@ services:
       - influx
     ports:
       - "8086:8086"
+      - "8088:8088"
     volumes:
       - /mnt/influx:/var/lib/inflxdb
 

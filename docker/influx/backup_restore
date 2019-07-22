@@ -21,6 +21,6 @@ COPY ./influx/* /backup/ #this copies the backup to the image
 CMD influxd restore -portable -host 172.18.0.2:8088 /backup/ #this is the command that will do the restore to the running influxdb container
                                                               # change the ip to the docker inflxudb's ip address (find by docker inspect <influxdb containter id>)
 To build (in the directory contaiing the above Dockerfile):
-docker build -t influxdb:restore .
+docker build -f ./influx_restore -t influxdb:restore .
 
 docker run --network=influx <container id>
