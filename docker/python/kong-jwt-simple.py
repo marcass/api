@@ -63,6 +63,7 @@ def auth():
     # return jsonify(content), 200
     # get group
     try:
+        # in order to test do curl -i --user name:password http://localhost:8000/jwt-stuff/<name>/acls
         x = requests.get('http://localhost:8000/jwt-stuff/'+username+'/acls', auth=HTTPBasicAuth(username, password))
         if x.status_code == 200:
             print('group get')
