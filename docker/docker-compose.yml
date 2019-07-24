@@ -24,16 +24,16 @@ services:
   ##########################################
   # API's
   ##########################################
-  # auth-api:
-  #   build:
-  #     context: .
-  #     dockerfile: "auth_docker"
-  #   depends_on:
-  #     - influxdb
+  auth-api:
+    build:
+      context: .
+      dockerfile: "auth_docker"
+    depends_on:
+      - influxdb
   #   volumes:
   #     - sqlite_db:/home/marcus/git/api/python
-  #   ports:
-  #    - "5001:5004"
+    ports:
+     - "5001:5001"
   sensor-api:
     build:
       context: .
