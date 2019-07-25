@@ -9,7 +9,7 @@ measurement = []
 
 db_name = 'sensors'
 # setup db
-client = InfluxDBClient(host='influxdb', port=8086)
+client = InfluxDBClient(host='localhost', port=8086)
 # setup db if it ins't already:
 def setup_db():
     print('checking for db')
