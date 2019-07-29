@@ -49,3 +49,15 @@ influx -database sensors -execute 'SHOW SERIES'
 ```
 influx -database sensors -execute 'SELECT * FROM "7_days"."things"'
 ```
+
+# Dealing with Kong form command line
+
+* Use curl
+
+ ```
+ curl -i --user <user>:<pass> url
+ ```
+
+ ```
+ curl -H 'Accept: application/json' -H "Authorization: Bearer ${TOKEN}" url
+ ```
