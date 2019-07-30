@@ -61,3 +61,8 @@ influx -database sensors -execute 'SELECT * FROM "7_days"."things"'
  ```
  curl -H 'Accept: application/json' -H "Authorization: Bearer ${TOKEN}" url
  ```
+
+ Querieying Kong for stuff:
+ ```
+ curl localhost:8001/routes | python -m json.tool
+ '''
