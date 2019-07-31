@@ -72,30 +72,30 @@ server {
 server {
         # only kong can access api's below
         server_name 192.168.0.152;
-        #listen 172.21.0.6:80;
+#       listen 172.21.0.1:81;
 
 
         #OLED test
-        location /kong/oled {
+        location /tank/oled {
       rewrite ^/kong/(.*) $1 break;
       proxy_pass http://127.0.0.1:5006/;
   }
 
   #influx data
-  location /kong/data {
-          rewrite ^/kong/(.*) $1 break;
+  location /influx/data {
+          rewrite ^/influx/(.*) $1 break;
           proxy_pass http://127.0.0.1:5002/;
   }
 
   #door data
-  location /kong/door {
-          rewrite ^/kong/(.*) $1 break;
+  location /kong-door/door {
+          rewrite ^/kong-door/(.*) $1 break;
           proxy_pass http://127.0.0.1:5003/;
   }
 
   #auth api
-  location /kong/auth {
-          rewrite ^/kong/(.*) $1 break;
+  location /kong-auth/auth {
+          rewrite ^/kong-auth/(.*) $1 break;
           proxy_pass http://127.0.0.1:5001/;
   }
 }
