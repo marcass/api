@@ -50,6 +50,12 @@ influx -database sensors -execute 'SHOW SERIES'
 influx -database sensors -execute 'SELECT * FROM "7_days"."things"'
 ```
 
+## running test image of influx
+
+```
+docker run --rm --network=influx -p 8088:8088 -p 8086:8086 -e INFLUXDB_BIND_ADDRESS=":8088" -v /mnt/influx:/var/lib/influxdb influxdb:latest
+```
+
 # Dealing with Kong form command line
 
 * Use curl
