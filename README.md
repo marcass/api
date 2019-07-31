@@ -65,4 +65,4 @@ influx -database sensors -execute 'SELECT * FROM "7_days"."things"'
  Querieying Kong for stuff:
  ```
  curl localhost:8001/routes | python -m json.tool
- '''
+'''
