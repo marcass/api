@@ -46,76 +46,76 @@ def add_claims_to_access_token(identity):
 @app.route('/auth/login', methods=['GET', 'POST'])
 def auth():
     global kong_stuff
-    # try:
-    print(request.headers)
-    content = request.get_json(silent=False)
-    print(content)
-    username = request.json.get('username', None)
-    password = request.json.get('password', None)
-    if not username:
-        return jsonify({"msg": "Missing username parameter"}), 400
-    if not password:
-        return jsonify({"msg": "Missing password parameter"}), 400
-    # setup something to creat the user variable here
-    # print (username)
-    # print (password)
-    # user = 'test-user'
-    # return jsonify(content), 200
-    # get group
     try:
-        # in order to test do curl -i --user name:password http://localhost:8000/jwt-stuff/<name>/acls
-        x = requests.get('http://localhost:8000/jwt-stuff/'+username+'/acls', auth=HTTPBasicAuth(username, password))
-        if x.status_code == 200:
-            print('group get')
-            print (x.text)
-            data = json.loads(x.text)['data']
-            group = []
-            for i in data:
-                if i['group']:
-                    group.append(i['group'])
-            # group = data['data'][0]['group']
-            print('groups')
-            print (group)
-        else:
-            # print 'fucked up with a bad username'
-            print(x.status_code)
-            return jsonify({"msg": x.status_code}), 401
+        print(request.headers)
+        content = request.get_json(silent=False)
+        print(content)
+        username = request.json.get('username', None)
+        password = request.json.get('password', None)
+        if not username:
+            return jsonify({"msg": "Missing username parameter"}), 400
+        if not password:
+            return jsonify({"msg": "Missing password parameter"}), 400
+        # setup something to creat the user variable here
+        # print (username)
+        # print (password)
+        # user = 'test-user'
+        # return jsonify(content), 200
+        # get group
+        try:
+            # in order to test do curl -i --user name:password http://localhost:8000/jwt-stuff/<name>/acls
+            x = requests.get('http://localhost:8000/jwt-stuff/'+username+'/acls', auth=HTTPBasicAuth(username, password))
+            if x.status_code == 200:
+                print('group get')
+                print (x.text)
+                data = json.loads(x.text)['data']
+                group = []
+                for i in data:
+                    if i['group']:
+                        group.append(i['group'])
+                # group = data['data'][0]['group']
+                print('groups')
+                print (group)
+            else:
+                # print 'fucked up with a bad username'
+                print(x.status_code)
+                return jsonify({"msg": x.status_code}), 401
+        except:
+            print("couldn't get group")
+            return jsonify({'Status':'Error', 'Message':'No group returned'}), 403
+        try:
+            # get jwt stuff for making token
+            # assumes route setup in kong that allows a path of jwt, with a service that has un upstram path of /consumers
+            r = requests.get('http://localhost:8000/jwt-stuff/'+username+'/jwt', auth=HTTPBasicAuth(username, password))
+            # r = requests.post('http://kong:8000/auth/'+username, json={'username': 'auth', 'password': 'iamauth'})
+            if r.status_code == 200:
+                print('jwt text')
+                print (r.text)
+                payload = json.loads(r.text)['data'][0]
+                print('json loads of jwt text')
+                print (payload)
+                # fetch iss string
+                kong_stuff = {'key': payload['key']}
+                # set secret
+                app.config['JWT_SECRET_KEY'] = payload['secret']
+            else:
+                # print 'fucked up with a bad username'
+                print(r.status_code)
+                return jsonify({"msg": r.status_code}), 401
+        except:
+            print("couldn't get jwt detail")
+            return jsonify({'Status':'Error', 'Message':'No jwt detail returned'}), 403
+        kong_stuff.update({'group': group})
+        print('kong dict')
+        print (kong_stuff)
+        # , 'refresh_token': create_refresh_token(identity=user)}
+        ret = {'access_token': create_jwt(identity=username)}
+        print('token')
+        print (ret)
+        return jsonify(ret), 200
     except:
-        print("couldn't get group")
-        return jsonify({'Status':'Error', 'Message':'No group returned'}), 403
-    try:
-        # get jwt stuff for making token
-        # assumes route setup in kong that allows a path of jwt, with a service that has un upstram path of /consumers
-        r = requests.get('http://localhost:8000/jwt-stuff/'+username+'/jwt', auth=HTTPBasicAuth(username, password))
-        # r = requests.post('http://kong:8000/auth/'+username, json={'username': 'auth', 'password': 'iamauth'})
-        if r.status_code == 200:
-            print('jwt text')
-            print (r.text)
-            payload = json.loads(r.text)['data'][0]
-            print('json loads of jwt text')
-            print (payload)
-            # fetch iss string
-            kong_stuff = {'key': payload['key']}
-            # set secret
-            app.config['JWT_SECRET_KEY'] = payload['secret']
-        else:
-            # print 'fucked up with a bad username'
-            print(r.status_code)
-            return jsonify({"msg": r.status_code}), 401
-    except:
-        print("couldn't get jwt detail")
-        return jsonify({'Status':'Error', 'Message':'No jwt detail returned'}), 403
-    kong_stuff.update({'group': group})
-    print('kong dict')
-    print (kong_stuff)
-    # , 'refresh_token': create_refresh_token(identity=user)}
-    ret = {'access_token': create_jwt(identity=username)}
-    print('token')
-    print (ret)
-    return jsonify(ret), 200
-    # except:
-    #     print ('empty request')
-    #     return jsonify({'Status':'Error', 'Message':'Empty request'})
+        print ('empty request')
+        return jsonify({'Status':'Error', 'Message':'Empty request'})
 
 if __name__ == "__main__":
     app.run(host = '0.0.0.0')

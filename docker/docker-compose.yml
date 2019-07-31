@@ -27,7 +27,7 @@ services:
   auth-api:
     build:
       context: .
-      dockerfile: "auth_docker"
+      dockerfile: "./auth_docker"
     depends_on:
       - influxdb
   #   volumes:
