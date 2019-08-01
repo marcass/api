@@ -1,6 +1,6 @@
 FROM python:3.5
 WORKDIR /home/mw/git/api/python
-COPY /home/marcus/git/api/docker/auth_req.txt ./
+COPY auth_req.txt .
 RUN pip install --no-cache-dir -r auth_req.txt
 COPY python .
 # https://stackoverflow.com/questions/43925487/how-to-run-gunicorn-on-docker
