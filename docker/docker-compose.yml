@@ -3,6 +3,8 @@ version: '3.7'
 networks:
   influx:
     driver: bridge
+  external: true
+    name: kong-net
 
 services:
 
@@ -28,23 +30,29 @@ services:
     build:
       context: .
       dockerfile: "./auth_docker"
+    networks:
+      - influx
+      - kong-net
     depends_on:
       - influxdb
-  #   volumes:
-  #     - sqlite_db:/home/marcus/git/api/python
-    ports:
-     - "5001:5001"
+    expose:
+      - "5001"
+  #  ports:
+  #   - "5001:5001"
   sensor-api:
     build:
       context: .
       dockerfile: "./sensor_docker"
     networks:
       - influx
+      - kong-net
     restart: unless-stopped
     depends_on:
       - influxdb
-    ports:
-      - "5002:5002"
+    expose:
+      - "5002"
+        #    ports:
+        #      - "5002:5002"
 
 #  door-api:
 #    build:

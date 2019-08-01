@@ -64,7 +64,7 @@ def auth():
         # get group
         try:
             # in order to test do curl -i --user name:password http://localhost:8000/jwt-stuff/<name>/acls
-            x = requests.get('http://localhost:8000/jwt-stuff/'+username+'/acls', auth=HTTPBasicAuth(username, password))
+            x = requests.get('http://kong:8000/jwt-stuff/'+username+'/acls', auth=HTTPBasicAuth(username, password))
             if x.status_code == 200:
                 print('group get')
                 print (x.text)
@@ -86,7 +86,7 @@ def auth():
         try:
             # get jwt stuff for making token
             # assumes route setup in kong that allows a path of jwt, with a service that has un upstram path of /consumers
-            r = requests.get('http://localhost:8000/jwt-stuff/'+username+'/jwt', auth=HTTPBasicAuth(username, password))
+            r = requests.get('http://kong:8000/jwt-stuff/'+username+'/jwt', auth=HTTPBasicAuth(username, password))
             # r = requests.post('http://kong:8000/auth/'+username, json={'username': 'auth', 'password': 'iamauth'})
             if r.status_code == 200:
                 print('jwt text')
