@@ -1,5 +1,5 @@
 flask
 datetime
 flask_jwt_simple
-json
 requests
+gunicorn
