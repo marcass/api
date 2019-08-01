@@ -16,7 +16,7 @@ def update_data():
     return jsonify(sensors.write_data(content)), 200
 
 
-@app.route("/data", methods=['GET',])
+@app.route("/data/values/types", methods=['GET',])
 def get_data():
     '''
     Get data from influx about sensor types

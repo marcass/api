@@ -27,8 +27,8 @@ jwt = JWTManager(app)
 @jwt.jwt_data_loader
 def add_claims_to_access_token(identity):
     global kong_stuff
-    print('printing identity')
-    print(identity)
+    # print('printing identity')
+    # print(identity)
     if identity == 'admin':
         roles = 'admin'
     else:
@@ -48,9 +48,9 @@ def add_claims_to_access_token(identity):
 def auth():
     global kong_stuff
     try:
-        print(request.headers)
+        # print(request.headers)
         content = request.get_json(silent=False)
-        print(content)
+        # print(content)
         username = request.json.get('username', None)
         password = request.json.get('password', None)
         if not username:
@@ -67,19 +67,19 @@ def auth():
             # in order to test do curl -i --user name:password http://localhost:8000/jwt-stuff/<name>/acls
             x = requests.get('https://skibo.duckdns.org/api/jwt-stuff/'+username+'/acls', auth=HTTPBasicAuth(username, password))
             if x.status_code == 200:
-                print('group get')
-                print (x.text)
+                # print('group get')
+                # print (x.text)
                 data = json.loads(x.text)['data']
                 group = []
                 for i in data:
                     if i['group']:
                         group.append(i['group'])
                 # group = data['data'][0]['group']
-                print('groups')
-                print (group)
+                # print('groups')
+                # print (group)
             else:
                 # print 'fucked up with a bad username'
-                print(x.status_code)
+                # print(x.status_code)
                 return jsonify({"msg": x.status_code}), 401
         except:
             print("couldn't get group")
@@ -90,11 +90,11 @@ def auth():
             r = requests.get('https://skibo.duckdns.org/api/jwt-stuff/'+username+'/jwt', auth=HTTPBasicAuth(username, password))
             # r = requests.post('http://kong:8000/auth/'+username, json={'username': 'auth', 'password': 'iamauth'})
             if r.status_code == 200:
-                print('jwt text')
-                print (r.text)
+                # print('jwt text')
+                # print (r.text)
                 payload = json.loads(r.text)['data'][0]
-                print('json loads of jwt text')
-                print (payload)
+                # print('json loads of jwt text')
+                # print (payload)
                 # fetch iss string
                 kong_stuff = {'key': payload['key']}
                 # set secret
@@ -107,12 +107,12 @@ def auth():
             print("couldn't get jwt detail")
             return jsonify({'Status':'Error', 'Message':'No jwt detail returned'}), 403
         kong_stuff.update({'group': group})
-        print('kong dict')
-        print (kong_stuff)
+        # print('kong dict')
+        # print (kong_stuff)
         # , 'refresh_token': create_refresh_token(identity=user)}
         ret = {'access_token': create_jwt(identity=username)}
-        print('token')
-        print (ret)
+        # print('token')
+        # print (ret)
         return jsonify(ret), 200
     except:
         print ('empty request')
