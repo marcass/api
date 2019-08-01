@@ -6,11 +6,10 @@ import re
 import json
 
 measurement = []
-hostIP = '192.168.0.152'
 
 db_name = 'sensors'
 # setup db
-client = InfluxDBClient(host='hostIP', port=8086)
+client = InfluxDBClient(host='influxdb', port=8086)
 # setup db if it ins't already:
 def setup_db():
     print('checking for db')

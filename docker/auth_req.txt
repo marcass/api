@@ -3,3 +3,4 @@ datetime
 flask_jwt_simple
 requests
 gunicorn
+flask_cors
