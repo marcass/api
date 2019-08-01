@@ -28,37 +28,32 @@ AUTH_URL = 'https://skibo.duckdns.org/api/auth/login'
 DATA_URL = 'https://skibo.duckdns.org/api/data'
 headers = ''
 jwt = ''
-#jwt_refresh = ''
-#refresh_headers = {"Authorization": "Bearer %s" %jwt_refresh}
 
 def getToken():
     global jwt
-#    global jwt_refresh
     global headers
     r = requests.post(AUTH_URL, json = {'username': creds.user, 'password': creds.password})
     tokens = r.json()
     print ('token data is: ' +str(tokens))
     try:
         jwt = tokens['access_token']
-        #jwt_refresh = tokens['refresh_token']
         headers = {"Authorization":"Bearer %s" %jwt}
-        print('got token')
+        #print('got token')
     except:
         print('oops, no token for you')
 
 def post_data(data):
     global jwt
-    #global jwt_refresh
     global headers
     if (jwt == ''):
         print('Getting token')
         getToken()
     ret = requests.post(DATA_URL, json = data, headers = headers)
-    print ('JWT = '+str(jwt))
-    print ('First response is: ' +str(ret))
+    #print ('JWT = '+str(jwt))
+    #print ('First response is: ' +str(ret))
     if '200' in str(ret):
-        print('Success')
-        print(data)
+        print('Data posted')
+        #print(data)
     if '200' not in str(ret):
         print('Oops, not authenticated')
         try:

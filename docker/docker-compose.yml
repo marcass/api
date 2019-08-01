@@ -34,8 +34,8 @@ services:
       - influxdb
     # expose:
     #   - "5001"
-   ports:
-    - "5001:5001"
+    ports:
+      - "5001:5001"
   sensor-api:
     build:
       context: .
