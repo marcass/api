@@ -33,7 +33,7 @@ def add_claims_to_access_token(identity):
     #     roles = 'admin'
     # else:
     #     roles = 'peasant'
-    if 'admin': in kong_stuff['group']:
+    if 'admin' in kong_stuff['group']:
         roles = 'admin'
     else:
         roles = 'peasant'
