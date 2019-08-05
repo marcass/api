@@ -16,18 +16,18 @@ def update_data():
     return jsonify(sensors.write_data(content)), 200
 
 
-@app.route("/data/values/types", methods=['GET',])
-def get_data():
-    '''
-    Get data from influx about sensor types
-    returns: [{'site': 'marcus',
-        'location': [{'fields': [u'light', u'temp'], 'id': u'downhall'},
-                    {'fields': [u'light', u'temp'], 'id': u'kitchen'},
-                    {'fields': [u'light', u'temp'], 'id': u'lounge'},
-                    {'fields': [u'light', u'temp'], 'id': u'spare'},
-                    {'fields': [u'light', u'temp'], 'id': u'window'}]}]
-    '''
-    return jsonify({"sensorID": sensors.get_sensorIDs(), "measurements": sensors.get_measurements()}), 200
+# @app.route("/data/values/types", methods=['GET',])
+# def get_data():
+#     '''
+#     Get data from influx about sensor types
+#     returns: [{'site': 'marcus',
+#         'location': [{'fields': [u'light', u'temp'], 'id': u'downhall'},
+#                     {'fields': [u'light', u'temp'], 'id': u'kitchen'},
+#                     {'fields': [u'light', u'temp'], 'id': u'lounge'},
+#                     {'fields': [u'light', u'temp'], 'id': u'spare'},
+#                     {'fields': [u'light', u'temp'], 'id': u'window'}]}]
+#     '''
+#     return jsonify({"sensorID": sensors.get_sensorIDs(), "measurements": sensors.get_measurements()}), 200
 
 
 @app.route("/data/values", methods=['POST',])

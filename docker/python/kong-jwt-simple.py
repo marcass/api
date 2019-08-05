@@ -29,11 +29,14 @@ def add_claims_to_access_token(identity):
     global kong_stuff
     # print('printing identity')
     # print(identity)
-    if identity == 'admin':
+    # if identity == 'admin':
+    #     roles = 'admin'
+    # else:
+    #     roles = 'peasant'
+    if 'admin': in kong_stuff['group']:
         roles = 'admin'
     else:
         roles = 'peasant'
-
     now = datetime.utcnow()
     return {
         'exp': now + timedelta(minutes=60),
