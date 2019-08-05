@@ -1,8 +1,15 @@
 version: '3.7'
 
+# connect to pre-esisting network. if not created create by:
+# docker network create vexme
 networks:
-  influx:
-    driver: bridge
+  vexme:
+    external:
+      name: vexme
+
+# networks:
+#   influx:
+#     driver: bridge
 
 services:
 
@@ -14,7 +21,7 @@ services:
     restart: unless-stopped
     # needs a network for a container to perform backups
     networks:
-      - influx
+      - vexme
     ports:
       - "8086:8086"
       - "8088:8088"
@@ -29,26 +36,26 @@ services:
       context: .
       dockerfile: "./auth_docker"
     networks:
-      - influx
+      - vexme
     depends_on:
       - influxdb
-    # expose:
-    #   - "5001"
-    ports:
-      - "5001:5001"
+    expose:
+      - "5001"
+    # ports:
+    #   - "5001:5001"
   sensor-api:
     build:
       context: .
       dockerfile: "./sensor_docker"
     networks:
-      - influx
+      - vexme
     restart: unless-stopped
     depends_on:
       - influxdb
-    # expose:
-    #   - "5002"
-    ports:
-      - "5002:5002"
+    expose:
+      - "5002"
+    # ports:
+    #   - "5002:5002"
 
 #  door-api:
 #    build:

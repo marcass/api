@@ -1,8 +1,14 @@
 version: "3.7"
 
+# connect to pre-esisting network. if not created create by:
+# docker network create vexme
+
 networks:
- kong-net:
-  driver: bridge
+  vexme:
+    external:
+      name: vexme
+  kong-net:
+    driver: bridge
 
 services:
 
@@ -13,6 +19,7 @@ services:
     image: postgres:9.6
     restart: unless-stopped
     networks:
+      # - vexme
       - kong-net
     environment:
       POSTGRES_USER: kong
@@ -35,6 +42,7 @@ services:
     command: "kong migrations bootstrap"
     networks:
       - kong-net
+      # - vexme
     restart: on-failure
     environment:
       KONG_PG_HOST: kong-database
@@ -51,6 +59,7 @@ services:
     restart: unless-stopped
     networks:
       - kong-net
+      - vexme
     environment:
       KONG_DATABASE: postgres
       KONG_PG_HOST: kong-database
@@ -83,6 +92,7 @@ services:
     command: "-c prepare -a postgres -u postgresql://kong@kong-database:5432/konga_db"
     networks:
       - kong-net
+      # - vexme
     restart: unless-stopped
     links:
       - kong-database
@@ -97,6 +107,7 @@ services:
     restart: unless-stopped
     networks:
         - kong-net
+        # - vexme
     environment:
       DB_ADAPTER: postgres
       DB_HOST: kong-database
