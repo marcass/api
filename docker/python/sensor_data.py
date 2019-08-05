@@ -9,6 +9,7 @@ measurement = []
 
 db_name = 'sensors'
 # setup db
+# host is in docker network called 'vexme' so can be found by ddocker hostname (influxdb)
 client = InfluxDBClient(host='influxdb', port=8086)
 # setup db if it ins't already:
 def setup_db():

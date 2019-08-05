@@ -16,6 +16,7 @@ This project is aimed at rapid redeplyoment of microservices when a machine fall
 
 Deploy images via docker compose and have a persistent kong data store (back this up)
 * Seperate network to data store for sensors
+* allow kong to access network for api's and datastore, as well as kong-net for it's own stuff
 
 ### Sensor datastore
 
@@ -26,8 +27,10 @@ Deploy images via docker compose and have a persistent kong data store (back thi
 ### Webserver
 
 * Nginx (local installation)
+   * reroutes all api requests through to kong
+   * knog redirects all traffic to relevant api from there after auth is successful
 
-# Accessing influx on host machine
+# Accessing influx on host machine (may exclude once auth sorted)
 
 1 Install influxdb-client
 1 Communication defaults to localhost and docker container port on influx is forwarded
@@ -44,7 +47,7 @@ influx -execute 'SHOW DATABASES'
 influx -database sensors -execute 'SHOW SERIES'
 ```
 
-## retrun some stuff
+## return some stuff
 
 ```
 influx -database sensors -execute 'SELECT * FROM "7_days"."things"'

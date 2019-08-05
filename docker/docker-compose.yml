@@ -22,6 +22,12 @@ services:
     # needs a network for a container to perform backups
     networks:
       - vexme
+    # determine if we need to expose influxdb to host or
+    # can keep in dodker network
+    # expose:
+    #   - "8088"
+    #   - "8086"
+    # following exposes ports to host
     ports:
       - "8086:8086"
       - "8088:8088"
