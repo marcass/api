@@ -56,12 +56,16 @@ services:
   ##########################################
   prometheus:
     image: prom/prometheus:latest
+    restart: unless-stopped
+    networks:
+      - vexme
     ports:
-    - "9090:9090"
-    command:
-    - --config.file=./prometheus.yml
+      - "9090:9090"
+        #command:
+        #- --config.file=./prometheus.yml
     volumes:
-    - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      # copy ./prometheus.yml to /tmp/prometheus.yml
+      - /home/mw/git/api/docker/prometheus.yml:/etc/prometheus/prometheus.yml:ro
     # Need to have this in /etc/docker/daemon.json on host:
     #   {
     #     "metrics-addr" : "127.0.0.1:9323",

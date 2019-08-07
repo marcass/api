@@ -31,4 +31,9 @@ scrape_configs:
          # scheme defaults to 'http'.
 
     static_configs:
-      - targets: ['localhost:9323']
+      - targets: ['192.168.0.152:9323']
+   
+  - job_name: 'kong'
+
+    static_configs:
+      - targets: ['kong:8001']
