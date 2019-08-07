@@ -51,6 +51,22 @@ services:
     volumes:
       - grafana-storage:/var/lib/grafana
 
+  ##########################################
+  # prometheus for kong and docker metrics
+  ##########################################
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+    - "9090:9090"
+    command:
+    - --config.file=./prometheus.yml
+    volumes:
+    - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    # Need to have this in /etc/docker/daemon.json on host:
+    #   {
+    #     "metrics-addr" : "127.0.0.1:9323",
+    #     "experimental" : true
+    #   }
 
   ##########################################
   # API's
