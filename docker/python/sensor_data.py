@@ -45,20 +45,20 @@ def setup_RP(vtype, meas):
     global retention_policies
     global measurement
     RP_list = []
-    # try:
-    RP = client.get_list_retention_policies(db_name)
-    for i in RP:
-        # produce list of existing retention policies
-        RP_list.append(i['name'])
-    # print RP_list
-    # except:
-    #     print 'No retention polices here'
+    try:
+        RP = client.get_list_retention_policies(db_name)
+        for i in RP:
+            # produce list of existing retention policies
+            RP_list.append(i['name'])
+            print (RP_list)
+    except:
+        print 'No retention polices here'
     for i in retention_policies:
         if i in RP_list:
             print('RP already here')
         else:
             print('making rp for '+i)
-            client.create_retention_policy(i, durations[i]['dur'], 1, database='sensors', default=durations[i]['default'])
+            client.create_retention_policy(i, durations[i]['dur'], 1, database=db_name, default=durations[i]['default'])
     # https://influxdb-python.readthedocs.io/en/latest/api-documentation.html
     # https://docs.influxdata.com/influxdb/v1.6/guides/downsampling_and_retention/
     try:
