@@ -14,7 +14,7 @@ We need to make sure it is the latest (backup was made in influxdb version 1.7.2
 We need to have our volume mounted to spinning disk (lots of writes)
 Following is an example of a container running influx that will receive a backup (be restored):
 
-docker run --network=influx -p 8088:8088 -p 8086:8086 -e INFLUXDB_BIND_ADDRESS=":8088" -v /mnt/extdisk:/var/lib/influxdb influxdb:latest
+docker run --network=vexme -p 8088:8088 -p 8086:8086 -e INFLUXDB_BIND_ADDRESS=":8088" -v influx:/var/lib/influxdb influxdb:latest
 
 An example of a Dockerfile that will set the restore up is this:
 
@@ -24,6 +24,6 @@ COPY ./influx/* /backup/ #this copies the backup to the image
 CMD influxd restore -portable -host 172.18.0.2:8088 /backup/ #this is the command that will do the restore to the running influxdb container
                                                               # change the ip to the docker inflxudb's ip address (find by docker inspect <influxdb containter id>)
 To build (in the directory contaiing the above Dockerfile):
-docker build -f ./influx_restore -t influxdb:restore .
+docker build -f ./influx_restore -t myinfluxdb:restore .
 
-docker run --network=influx <container id>
+docker run -rm --network=vexme <container id>

@@ -32,7 +32,7 @@ services:
       - "8086:8086"
       - "8088:8088"
     volumes:
-      - /mnt/influx:/var/lib/inflxdb
+      - influx:/var/lib/influxdb
 
   ##########################################
   # Grafana for visualisatons
@@ -71,7 +71,7 @@ services:
       - /home/mw/git/api/docker/prometheus.yml:/etc/prometheus/prometheus.yml:ro
     # Need to have this in /etc/docker/daemon.json on host:
     #   {
-    #     "metrics-addr" : "127.0.0.1:9323",
+    #     "metrics-addr" : "0.0.0.0:9323",
     #     "experimental" : true
     #   }
 
@@ -114,4 +114,6 @@ services:
 
 volumes:
   grafana-storage:
-#   influx:
+  influx:
+    external:
+      name: influx
