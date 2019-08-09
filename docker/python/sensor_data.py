@@ -6,11 +6,11 @@ import re
 import json
 
 measurement = []
-
+influxdb_host = 'influxdb'
 db_name = 'sensors'
 # setup db
 # host is in docker network called 'vexme' so can be found by ddocker hostname (influxdb)
-client = InfluxDBClient(host='localhost', port=8086)
+client = InfluxDBClient(host=influxdb_host, port=8086)
 # setup db if it ins't already:
 def setup_db():
     print('checking for db')
@@ -55,7 +55,7 @@ def setup_RP(vtype, meas):
         print ('No retention polices here')
     for i in retention_policies:
         if i in RP_list:
-            #print('RP already here')
+            print('RP already here')
         else:
             print('making rp for '+i)
             client.create_retention_policy(i, durations[i]['dur'], 1, database=db_name, default=durations[i]['default'])
