@@ -10,7 +10,7 @@ measurement = []
 db_name = 'sensors'
 # setup db
 # host is in docker network called 'vexme' so can be found by ddocker hostname (influxdb)
-client = InfluxDBClient(host='influxdb', port=8086)
+client = InfluxDBClient(host='localhost', port=8086)
 # setup db if it ins't already:
 def setup_db():
     print('checking for db')
@@ -50,12 +50,12 @@ def setup_RP(vtype, meas):
         for i in RP:
             # produce list of existing retention policies
             RP_list.append(i['name'])
-            print (RP_list)
+            #print (RP_list)
     except:
-        print 'No retention polices here'
+        print ('No retention polices here')
     for i in retention_policies:
         if i in RP_list:
-            print('RP already here')
+            #print('RP already here')
         else:
             print('making rp for '+i)
             client.create_retention_policy(i, durations[i]['dur'], 1, database=db_name, default=durations[i]['default'])
@@ -102,7 +102,7 @@ def write_data(data):
     data = clean(data)
     # incoming format should be:
     # data = {'measurement': 'tablename', 'tags':{'type':'meastype', 'sensorID':'sensor name', 'site': 'thissite'}, 'value':value}
-    # print (data)
+    #print (data)
     # ensure RP's and CQ's in place for new sites
     if 'measurement' in data:
         measurement = data['measurement']
