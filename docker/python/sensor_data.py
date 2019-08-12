@@ -102,7 +102,7 @@ def write_data(data):
     data = clean(data)
     # incoming format should be:
     # data = {'measurement': 'tablename', 'tags':{'type':'meastype', 'sensorID':'sensor name', 'site': 'thissite'}, 'value':value}
-    #print (data)
+    print (data)
     # ensure RP's and CQ's in place for new sites
     if 'measurement' in data:
         measurement = data['measurement']

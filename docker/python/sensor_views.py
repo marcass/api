@@ -20,7 +20,7 @@ def update_data_tanks():
     '''
     Writes data to influx from tank remote sensor
     '''
-    # print (request.headers)
+    print (request.headers)
     content = request.get_json(silent=False)
     # print content
     return jsonify(sensors.write_data(content)), 200

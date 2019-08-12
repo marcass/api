@@ -90,19 +90,18 @@ services:
       - "5001"
     # ports:
     #   - "5001:5001"
-  sensor-api:
-    build:
-      context: .
-      dockerfile: "./sensor_docker"
-    networks:
-      - vexme
-    restart: unless-stopped
-    depends_on:
-      - influxdb
-    expose:
-      - "5002"
-    # ports:
-    #   - "5002:5002"
+  # sensor-api:
+  #   build:
+  #     context: .
+  #     dockerfile: "./sensor_docker"
+  #   networks:
+  #     - vexme
+  #   restart: unless-stopped
+  #   depends_on:
+  #     - influxdb
+  #   expose:
+  #     - "5002"
+
 
 #  door-api:
 #    build:
