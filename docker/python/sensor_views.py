@@ -15,6 +15,16 @@ def update_data():
     # print content
     return jsonify(sensors.write_data(content)), 200
 
+@app.route("/data/tanks", methods=['POST',])
+def update_data_tanks():
+    '''
+    Writes data to influx from tank remote sensor
+    '''
+    # print (request.headers)
+    content = request.get_json(silent=False)
+    # print content
+    return jsonify(sensors.write_data(content)), 200
+
 
 # @app.route("/data/values/types", methods=['GET',])
 # def get_data():
