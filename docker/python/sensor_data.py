@@ -7,7 +7,7 @@ import json
 import tank_hack as tanks
 
 measurement = []
-#influxdb_host = 'localhost'
+# influxdb_host = 'localhost'
 influxdb_host = 'influxdb'
 db_name = 'sensors'
 # setup db
@@ -103,7 +103,8 @@ def sort_tank_data(data):
     ret = tanks.tank_data(data)
     print(ret)
     for i in ret:
-        write_data(i)
+        if i is not None:
+            write_data(i)
 
 def write_data(data):
     data = clean(data)

@@ -34,7 +34,7 @@ class Buffer:
 def tank_data(data):
     global buffer_by_name_dict
     global tanks_dict
-    print(data)
+    # print(data)
     # sens_array = ['top', 'noels', 'sals', 'main', 'bay', 'relay']
     #try:
     info = data['value'].split(';')
@@ -47,35 +47,28 @@ def tank_data(data):
         obj = Buffer(in_tank)
     buff = buffer_by_name_dict[in_tank]
     try:
-        dist = int(water_dict['value'])
+        dist = int(info[2])
         dist = buff.filtered_water(dist)
-    except:
-        dist = None
-    try:
-        batt = float(info[3])
-        batt = buff.filtered_batt(batt)
-    except:
-        print('battery exception')
-        batt = None
-    try:
+        # print(dist)
         if (dist < int(tanks_dict[info[1]]['min_dist'])) or (dist > int(tanks_dict[info[1]]['max_dist'])):
             print('Payload out of range')
             level = None
         else:
             print('payload in range')
-            dist = dist - int(tank_data['min_dist'])
-            level = float(tank_data['max_dist'] - dist)/float(tank_data['max_dist']) * 100.0
+            dist = dist - int(tanks_dict[info[1]]['min_dist'])
+            level = float(tanks_dict[info[1]]['max_dist'] - dist)/float(tanks_dict[info[1]]['max_dist']) * 100.0
             water_ret = {'tags': {'type':'water_level', 'sensorID':in_tank, 'site': data['site']}, 'value': level, 'measurement': 'tanks'}
     except:
-       print('exception in water assesment for some reason')
-       water_ret = None
+        water_ret = None
     try:
+        batt = float(info[3])
+        batt = buff.filtered_batt(batt)
         if (batt == 0) or (batt > 5.0):
-            batt = None
+            batt_ret = None
+        else:
+            batt_ret = {'tags': {'type':'batt_level', 'sensorID':in_tank, 'site': data['site']}, 'value': batt, 'measurement': 'tanks'}
     except:
-        batt = None
-    batt_ret = {'tags': {'type':'batt_level', 'sensorID':in_tank, 'site': data['site']}, 'value': batt, 'measurement': 'tanks'}
-    if water_ret is None:
-        return [batt_ret]
+        print('battery exception')
+        batt_ret = None
     else:
         return [water_ret, batt_ret]
