@@ -23,11 +23,11 @@ def update_data_tanks():
     '''
     print("got tanks data")
     print (request.headers)
-    try:
-        content = request.get_json(silent=False)
-        print (content)
-    except:
-        print("could not read data")
+    #try:
+    content = request.get_json(silent=False)
+    print (content)
+    #except:
+    #    print("could not read data")
     return jsonify(sensors.sort_tank_data(content)), 200
 
 

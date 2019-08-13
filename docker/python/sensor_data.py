@@ -4,6 +4,8 @@ import datetime
 import time
 import re
 import json
+from collections import deque
+from numpy import median
 
 measurement = []
 influxdb_host = 'localhost'
@@ -107,15 +109,12 @@ def sort_tank_data(data):
     global tanks_dict
     print(data)
     # sens_array = ['top', 'noels', 'sals', 'main', 'bay', 'relay']
-    try:
-        info = data['value'].split(';')
-        in_tank = tanks_dict[info[1]]['name']
-        batt_dict = {'measurement': 'tanks', 'tags':{'type': 'batt_level', 'sensorID': in_tank, 'site': data['site']}, 'value': info[3]}
-        print(water_dict)
-        print(batt_dict)
-    except:
-        print("Could not parse data")
-        return
+    #try:
+    info = data['value'].split(';')
+    in_tank = tanks_dict[info[1]]['name']
+    #except:
+    #    print("Could not parse data")
+    #    return
     if in_tank not in buffer_by_name_dict:
         obj = in_tank
         obj = Buffer(in_tank)
@@ -131,30 +130,24 @@ def sort_tank_data(data):
     except:
         print('battery exception')
         batt = None
-    try:
-        if (dist < int(tanks_dict[info[1]]['min_dist'])) or (dist > int(tanks_dict[info[1]]['max_dist'])):
-            print('Payload out of range')
-            level = None
-        else:
-            print('payload in range')
-            dist = dist - int(tank_data['min_dist'])
-            level = float(tank_data['max_dist'] - dist)/float(tank_data['max_dist']) * 100.0
-            write_data({'tags': {'type':'water_level', 'sensorID':in_tank, 'site': data['site']}, 'value': level, 'measurement': 'tanks'})
-    except:
-        print('exception in water assesment for some reason')
+    #try:
+    if (dist < int(tanks_dict[info[1]]['min_dist'])) or (dist > int(tanks_dict[info[1]]['max_dist'])):
+        print('Payload out of range')
         level = None
+    else:
+        print('payload in range')
+        dist = dist - int(tank_data['min_dist'])
+        level = float(tank_data['max_dist'] - dist)/float(tank_data['max_dist']) * 100.0
+        write_data({'tags': {'type':'water_level', 'sensorID':in_tank, 'site': data['site']}, 'value': level, 'measurement': 'tanks'})
+    #except:
+    #    print('exception in water assesment for some reason')
+    #    level = None
     try:
         if (batt == 0) or (batt > 5.0):
             batt = None
     except:
         batt = None
     write_data({'tags': {'type':'batt_level', 'sensorID':in_tank, 'site': data['site']}, 'value': batt, 'measurement': 'tanks'})
-    #add to db
-    # print 'writing value voltage ' +str(batt) +' and volume ' +str(level) +' to db for ' +sql.tanks_by_nodeID[in_node].name
-    sql.add_measurement(in_node,level,batt)
-    # except:
-    #     print('malformed string')
-    #     return {'msg': 'malformed string'}
 
 
 # sanitise strings to reduce sql-injection issues
