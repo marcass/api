@@ -3,8 +3,6 @@ import creds
 import json
 import sensor_data as sensors
 from init import app
-# telegram bots for alerts
-import telegram_tanks
 
 # Sensor data routes ####################################
 @app.route("/data", methods=['POST',])
