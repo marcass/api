@@ -3,3 +3,4 @@ flask_jwt_simple
 influxdb
 flask_cors
 gunicorn
+numpy
