@@ -4,4 +4,3 @@ influxdb
 flask_cors
 gunicorn
 numpy
-collections

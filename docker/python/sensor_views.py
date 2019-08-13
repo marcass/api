@@ -21,13 +21,7 @@ def update_data_tanks():
     '''
     Writes data to influx from tank remote sensor
     '''
-    print("got tanks data")
-    print (request.headers)
-    #try:
     content = request.get_json(silent=False)
-    print (content)
-    #except:
-    #    print("could not read data")
     return jsonify(sensors.sort_tank_data(content)), 200
 
 

@@ -68,11 +68,14 @@ def tank_data(data):
             water_ret = {'tags': {'type':'water_level', 'sensorID':in_tank, 'site': data['site']}, 'value': level, 'measurement': 'tanks'}
     except:
        print('exception in water assesment for some reason')
-       level = None
+       water_ret = None
     try:
         if (batt == 0) or (batt > 5.0):
             batt = None
     except:
         batt = None
     batt_ret = {'tags': {'type':'batt_level', 'sensorID':in_tank, 'site': data['site']}, 'value': batt, 'measurement': 'tanks'}
-    return [water_ret, batt_ret]
+    if water_ret is None:
+        return [batt_ret]
+    else:
+        return [water_ret, batt_ret]

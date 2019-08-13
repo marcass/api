@@ -7,8 +7,8 @@ import json
 import tank_hack as tanks
 
 measurement = []
-influxdb_host = 'localhost'
-#influxdb_host = 'influxdb'
+#influxdb_host = 'localhost'
+influxdb_host = 'influxdb'
 db_name = 'sensors'
 # setup db
 # host is in docker network called 'vexme' so can be found by ddocker hostname (influxdb)
@@ -101,8 +101,9 @@ def clean_debug(data):
 # tank hack in place of db
 def sort_tank_data(data):
     ret = tanks.tank_data(data)
-    write_data(ret[0])
-    write_data(ret[1])    
+    print(ret)
+    for i in ret:
+        write_data(i)
 
 def write_data(data):
     data = clean(data)
