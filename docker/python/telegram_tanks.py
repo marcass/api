@@ -5,11 +5,8 @@ from telepot.loop import MessageLoop
 import telepot.api
 import creds
 
-def always_use_new(req, **user_kw):
-    return None
-
-def handle():
-    print("got a message")
+def handle(msg):
+    print(msg)
 
 TOKEN = creds.botTanks
 bot = telepot.Bot(TOKEN)
