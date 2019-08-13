@@ -28,7 +28,7 @@ def update_data_tanks():
         print (content)
     except:
         print("could not read data")
-    return jsonify(sensors.write_data(content)), 200
+    return jsonify(sensors.sort_tank_data(content)), 200
 
 
 # @app.route("/data/values/types", methods=['GET',])
