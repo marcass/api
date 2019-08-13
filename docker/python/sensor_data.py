@@ -120,7 +120,7 @@ def sort_tank_data(data):
         obj = Buffer(in_tank)
     buff = buffer_by_name_dict[in_tank]
     try:
-        dist = int(water_dict['value'])
+        dist = int(info[2])
         dist = buff.filtered_water(dist)
     except:
         dist = None
@@ -130,18 +130,23 @@ def sort_tank_data(data):
     except:
         print('battery exception')
         batt = None
-    #try:
-    if (dist < int(tanks_dict[info[1]]['min_dist'])) or (dist > int(tanks_dict[info[1]]['max_dist'])):
-        print('Payload out of range')
+    try:
+        #print('distance stuff:')
+        #print(dist)
+        if (dist < int(tanks_dict[info[1]]['min_dist'])) or (dist > int(tanks_dict[info[1]]['max_dist'])):
+            print('Payload out of range')
+            level = None
+        else:
+            print('payload in range')
+            dist = dist - int(tanks_dict[info[1]]['min_dist'])
+            #print(dist)
+            level = float(tanks_dict[info[1]]['max_dist'] - dist)/float(tanks_dict[info[1]]['max_dist']) * 100.0
+            #print ('level is:')
+            #print(level)
+            write_data({'tags': {'type':'water_level', 'sensorID':in_tank, 'site': data['site']}, 'value': level, 'measurement': 'tanks'})
+    except:
+        #print('exception in water assesment for some reason')
         level = None
-    else:
-        print('payload in range')
-        dist = dist - int(tank_data['min_dist'])
-        level = float(tank_data['max_dist'] - dist)/float(tank_data['max_dist']) * 100.0
-        write_data({'tags': {'type':'water_level', 'sensorID':in_tank, 'site': data['site']}, 'value': level, 'measurement': 'tanks'})
-    #except:
-    #    print('exception in water assesment for some reason')
-    #    level = None
     try:
         if (batt == 0) or (batt > 5.0):
             batt = None
