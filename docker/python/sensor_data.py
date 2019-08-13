@@ -6,7 +6,8 @@ import re
 import json
 
 measurement = []
-influxdb_host = 'influxdb'
+influxdb_host = 'localhost'
+#influxdb_host = 'influxdb'
 db_name = 'sensors'
 # setup db
 # host is in docker network called 'vexme' so can be found by ddocker hostname (influxdb)

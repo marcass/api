@@ -10,6 +10,7 @@ def update_data():
     '''
     Writes data to influx from remote sensor
     '''
+    #print("SEnsor data incoming")
     # print (request.headers)
     content = request.get_json(silent=False)
     # print content
@@ -20,9 +21,13 @@ def update_data_tanks():
     '''
     Writes data to influx from tank remote sensor
     '''
+    print("got tanks data")
     print (request.headers)
-    content = request.get_json(silent=False)
-    # print content
+    try:
+        content = request.get_json(silent=False)
+        print (content)
+    except:
+        print("could not read data")
     return jsonify(sensors.write_data(content)), 200
 
 
