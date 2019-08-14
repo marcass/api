@@ -111,6 +111,20 @@ services:
 #    ports:
 #      - "5003:5003"
 
+  ##########################################
+  # alerts
+  #########################################
+
+  alerts:
+    build:
+      context: .
+      dockerfile: "./alerts_docker"
+    networks:
+      - vexme
+    depends_on:
+      - grafana
+
+
 volumes:
   grafana-storage:
   influx:

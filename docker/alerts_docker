@@ -1,0 +1,5 @@
+FROM python:3.5
+COPY sensor_req.txt .
+RUN pip install --no-cache-dir -r alerts_req.txt
+COPY python .
+CMD [ "python", "./alerts.py" ]
