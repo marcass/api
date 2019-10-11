@@ -1,6 +1,6 @@
 FROM python:3.5
 COPY door_req.txt .
-RUN pip install --no-cache-dir -r door_req.txt
+RUN pip install --upgrade pip --no-cache-dir -r door_req.txt
 COPY python .
 # https://stackoverflow.com/questions/43925487/how-to-run-gunicorn-on-docker
 #need to expose to host machine
