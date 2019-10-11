@@ -2,6 +2,8 @@ to backup and restore versions of influx db must match (what a nightmare)
 
 Steps to backup:
 1. https://www.grzegorowski.com/how-to-backup-and-restore-influxdb-which-runs-inside-docker-container/
+1. https://github.com/loomchild/volume-backup
+1. https://medium.com/@loomchild/backup-restore-docker-named-volumes-350397b8e362
 
 Steps to restore:
 1. ensure influx is running and listening on 8088:
