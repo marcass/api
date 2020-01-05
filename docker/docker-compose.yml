@@ -106,7 +106,7 @@ services:
       context: .
       dockerfile: "./tankingress_docker"
     networks:
-      - vexme
+      - vexme6
     restart: unless-stopped
     depends_on:
       - influxdb
