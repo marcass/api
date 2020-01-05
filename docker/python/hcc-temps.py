@@ -58,7 +58,7 @@ def post_data(data):
         print('Oops, not authenticated')
         try:
             getToken()
-            requests.post(DATA_URL, json = data, headers = headersi)
+            requests.post(DATA_URL, json = data, headers = headers)
             ret = {'Status': 'Error', 'Message': 'Got token'}
             print('Post NOT 200 response is: ' +str(r))
         except:

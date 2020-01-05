@@ -37,3 +37,8 @@ scrape_configs:
 
     static_configs:
       - targets: ['kong:8001']
+
+  - job_name: 'host_machine'
+
+    static_configs:
+      - targets: ['192.168.0.152:9100']
