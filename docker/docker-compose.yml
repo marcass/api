@@ -101,6 +101,17 @@ services:
       - influxdb
     expose:
       - "5002"
+  tank-ingress-api:
+    build:
+      context: .
+      dockerfile: "./tankingress_docker"
+    networks:
+      - vexme
+    restart: unless-stopped
+    depends_on:
+      - influxdb
+    expose:
+      - "5003"
 
 
 #  door-api:
