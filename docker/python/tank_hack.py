@@ -36,12 +36,12 @@ def tank_data(data):
     global tanks_dict
     # print(data)
     # sens_array = ['top', 'noels', 'sals', 'main', 'bay', 'relay']
-    #try:
-    info = data['value'].split(';')
-    in_tank = tanks_dict[info[1]]['name']
-    #except:
-    #    print("Could not parse data")
-    #    return
+    try:
+        info = data['value'].split(';')
+        in_tank = tanks_dict[info[1]]['name']
+    except:
+        print("Could not parse data")
+        return
     if in_tank not in buffer_by_name_dict:
         obj = in_tank
         obj = Buffer(in_tank)
@@ -70,5 +70,4 @@ def tank_data(data):
     except:
         print('battery exception')
         batt_ret = None
-    else:
-        return [water_ret, batt_ret]
+    return [water_ret, batt_ret]
