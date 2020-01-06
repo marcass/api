@@ -13,11 +13,11 @@ def update_data():
     #print("SEnsor data incoming")
     # print (request.headers)
     content = request.get_json(silent=False)
-    print (content)
-    if 'PY' in content and len(content) < 100:
-        return jsonify(sensors.sort_tank_data(content)), 200
-    else:
-        return 412
+    # print (content)
+    # if 'PY' in content and len(content) < 100:
+    return jsonify(sensors.sort_tank_data(content)), 200
+    # else:
+    #     return 412
 
 if __name__ == "__main__":
     app.run()
