@@ -16,8 +16,10 @@ def update_data():
     # content = request.get_json(silent=False)
     content = request.data
     print (type(content))
+    data = json.loads(content.decode("utf-8", errors='replace'))
     # stripped = content.encode("ascii", "ignore")
     print (content)
+    print (data)
     # formatted = json.loads(stripped)
     # print (type(stripped))
     # print(stripped)
