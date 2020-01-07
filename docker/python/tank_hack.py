@@ -52,7 +52,7 @@ def tank_data(data):
         # print(dist)
         if (dist < int(tanks_dict[info[1]]['min_dist'])) or (dist > int(tanks_dict[info[1]]['max_dist'])):
             print('Payload out of range')
-            level = None
+            water_ret = None
         else:
             print('payload in range')
             dist = dist - int(tanks_dict[info[1]]['min_dist'])
