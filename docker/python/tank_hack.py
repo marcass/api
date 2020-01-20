@@ -8,11 +8,12 @@ from numpy import median
 tanks_dict = {
     '1':{'name':'top', 'min_dist': 45, 'max_dist': 370},
     '2':{'name':'noels', 'min_dist': 20, 'max_dist': 370},
-    '3':{'name':'sals', 'min_dist': 27, 'max_dist': 370},
-    '4':{'name':'main', 'min_dist': 45, 'max_dist': 370},
+    '3':{'name':'sals', 'min_dist': 20, 'max_dist': 370},
+    '4':{'name':'main', 'min_dist': 15, 'max_dist': 370},
     '5':{'name':'bay', 'min_dist': 45, 'max_dist': 370},
     '6':{'name':'relay', 'min_dist': None, 'max_dist': None}
 }
+#'4':{'name':'main', 'min_dist': 45, 'max_dist': 370},
 
 # set up buffer
 buffer_by_name_dict = {}
