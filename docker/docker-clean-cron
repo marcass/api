@@ -1,0 +1,26 @@
+#!/bin/bash
+
+#run as root
+#variables
+API="api-influx-docker-compose"
+KONG="kong-docker-compose"
+API_PATH="/home/mw/git/api/docker"
+
+#Stop services
+systemctl stop $KONG
+systemctl stop $API
+
+#get rid of shit and start from clean slate
+#This deletes stuff in /var/lib/docker/overlay2
+docker container prune
+
+#rebuild images
+cd $API_PATH
+docker-compose build --pull
+docker pull pantsel/konga
+
+#restart services
+systemctl start $KONG
+systemctl start $API
+
+exit
