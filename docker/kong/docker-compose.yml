@@ -50,6 +50,24 @@ services:
       - kong-database
     depends_on:
       - kong-database
+  
+  kong-migrations-up:
+    image: kong:latest
+    command: kong migrations up
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      KONG_DATABASE: postgres
+      KONG_PG_DATABASE: kong
+      KONG_PG_HOST: kong-database
+      KONG_PG_PASSWORD: kong
+      KONG_PG_USER: kong
+    links:
+      - kong-database
+    networks:
+      - kong-net
+    restart: on-failure
 
   #######################################
   # Kong: The API Gateway
