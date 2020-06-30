@@ -55,8 +55,8 @@ services:
     image: kong:latest
     command: kong migrations up
     depends_on:
-      db:
-        condition: service_healthy
+      - kong-database
+      condition: service_healthy
     environment:
       KONG_DATABASE: postgres
       KONG_PG_DATABASE: kong
