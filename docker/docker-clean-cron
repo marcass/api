@@ -12,12 +12,19 @@ systemctl stop $API
 
 #get rid of shit and start from clean slate
 #This deletes stuff in /var/lib/docker/overlay2
-docker container prune
+docker container prune -f
+docker image prune -f
+
+#create array of volumes
+declare -a volumes
+volumes = `docker volume ls| awk '{ print $2 }' | tail -n+2`
+#remove unused volumes
+for i in $volumes; do if [ $i = "influx" ] || [ $i = "docker_grafana-storage" ]; then echo "skipping"; else `docker volume rm $i`; fi; done
 
 #rebuild images
-cd $API_PATH
-docker-compose build --pull
-docker pull pantsel/konga
+#cd $API_PATH
+#docker-compose build --pull
+#docker pull pantsel/konga
 
 #restart services
 systemctl start $KONG

@@ -75,3 +75,10 @@ docker run --rm --network=influx -p 8088:8088 -p 8086:8086 -e INFLUXDB_BIND_ADDR
  ```
  curl localhost:8001/routes | python -m json.tool
 '''
+
+# IPV6 network
+
+Create using 
+'''
+docker network create --subnet=172.18.0.0/16 --gateway=172.18.0.1 --ipv6 --subnet=2001:db8:2::/64 vexme6
+'''
