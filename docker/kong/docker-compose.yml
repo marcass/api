@@ -50,6 +50,23 @@ services:
       - kong-database
     depends_on:
       - kong-database
+
+  kong-migrations-finish:
+    image: kong:latest
+    command: kong migrations finish
+    depends_on:
+      - kong-database
+    environment:
+      KONG_DATABASE: postgres
+      KONG_PG_DATABASE: kong
+      KONG_PG_HOST: kong-database
+      KONG_PG_PASSWORD: kong
+      KONG_PG_USER: kong
+    links:
+      - kong-database
+    networks:
+      - kong-net
+    restart: on-failure
   
   kong-migrations-up:
     image: kong:latest
