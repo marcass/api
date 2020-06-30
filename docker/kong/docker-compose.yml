@@ -53,10 +53,9 @@ services:
   
   kong-migrations-up:
     image: kong:latest
-    command: kong migrations up
+    command: kong migrations up --vv
     depends_on:
       - kong-database
-      condition: service_healthy
     environment:
       KONG_DATABASE: postgres
       KONG_PG_DATABASE: kong
