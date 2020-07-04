@@ -2,4 +2,4 @@
 *.pyc
 creds.py
 influx_bak
-
+*PASSWORD*
