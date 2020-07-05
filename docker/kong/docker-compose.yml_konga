@@ -1,7 +1,7 @@
 version: "3.7"
 
 # connect to pre-esisting network. if not created create by:
-# docker network create --subnet=172.18.0.0/16 --gateway=172.18.0.1 --ipv6 --subnet=2001:db8:2::/64 vexme6
+# docker network create vexme
 
 networks:
   vexme6:
@@ -9,6 +9,10 @@ networks:
       name: vexme6
   kong-net:
     driver: bridge
+
+secrets:
+  kong_postgres_password:
+    file: ./POSTGRES_PASSWORD
 
 services:
 
@@ -23,7 +27,11 @@ services:
       - kong-net
     environment:
       POSTGRES_USER: kong
+      #POSTGRES_PASSWORD: kong
       POSTGRES_DB: kong
+      POSTGRES_PASSWORD_FILE: /run/secrets/kong_postgres_password
+    secrets:
+      - kong_postgres_password
     ports:
       - "5432:5432"
     volumes:
@@ -51,43 +59,47 @@ services:
     depends_on:
       - kong-database
 
-  kong-migrations-finish:
-    image: kong:latest
-    command: kong migrations finish
-    depends_on:
-      - kong-database
-    environment:
-      KONG_DATABASE: postgres
-      KONG_PG_DATABASE: kong
-      KONG_PG_HOST: kong-database
-      KONG_PG_PASSWORD: kong
-      KONG_PG_USER: kong
-    links:
-      - kong-database
-    networks:
-      - kong-net
-    restart: on-failure
+        #  kong-migrations-up:
+        #    image: kong:latest
+        #    command: bash -c "kong migrations up --v && kong migrations finish --v"
+        #    depends_on:
+        #      - kong-database
+        #    environment:
+        #      KONG_DATABASE: postgres
+        #      KONG_PG_DATABASE: kong
+        #      KONG_PG_HOST: kong-database
+        #      KONG_PG_PASSWORD: kong
+        #      KONG_PG_USER: kong
+        #    links:
+        #      - kong-database
+        #    networks:
+        #      - kong-net
+        #    restart: on-failure
+
+
+    #  kong-migrations-finish:
+    #    image: kong:latest
+    #    command: kong migrations finish --v
+    #    depends_on:
+    #      - kong-migrations-up
+    #      - kong-database
+    #    environment:
+    #      KONG_DATABASE: postgres
+    #      KONG_PG_DATABASE: kong
+    #      KONG_PG_HOST: kong-database
+    #      KONG_PG_PASSWORD: kong
+    #      KONG_PG_USER: kong
+    #    links:
+    #      - kong-database
+    #    networks:
+    #      - kong-net
+    #    restart: on-failure
   
-  kong-migrations-up:
-    image: kong:latest
-    command: kong migrations up
-    depends_on:
-      - kong-database
-    environment:
-      KONG_DATABASE: postgres
-      KONG_PG_DATABASE: kong
-      KONG_PG_HOST: kong-database
-      KONG_PG_PASSWORD: kong
-      KONG_PG_USER: kong
-    links:
-      - kong-database
-    networks:
-      - kong-net
-    restart: on-failure
 
   #######################################
   # Kong: The API Gateway
   #######################################
+  
   kong:
     image: kong:latest
     restart: unless-stopped

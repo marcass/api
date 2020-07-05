@@ -3,9 +3,9 @@ version: '3.7'
 # connect to pre-esisting network. if not created create by:
 # docker network create vexme
 networks:
-  vexme6:
+  vexme:
     external:
-      name: vexme6
+      name: vexme
 
 # networks:
 #   influx:
@@ -21,7 +21,7 @@ services:
     restart: unless-stopped
     # needs a network for a container to perform backups
     networks:
-      - vexme6
+      - vexme
     # determine if we need to expose influxdb to host or
     # can keep in dodker network
     # expose:
@@ -41,7 +41,7 @@ services:
     image: grafana/grafana
     restart: unless-stopped
     networks:
-      - vexme6
+      - vexme
     environment:
       GF_SERVER_ROOT_URL: http://grafana/api/grafana
     depends_on:
@@ -61,7 +61,7 @@ services:
     image: prom/prometheus:latest
     restart: unless-stopped
     networks:
-      - vexme6
+      - vexme
     ports:
       - "9090:9090"
         #command:
@@ -83,7 +83,7 @@ services:
       context: .
       dockerfile: "./auth_docker"
     networks:
-      - vexme6
+      - vexme
     depends_on:
       - influxdb
     expose:
@@ -95,7 +95,7 @@ services:
       context: .
       dockerfile: "./sensor_docker"
     networks:
-      - vexme6
+      - vexme
     restart: unless-stopped
     depends_on:
       - influxdb
@@ -106,7 +106,7 @@ services:
       context: .
       dockerfile: "./tankingress_docker"
     networks:
-      - vexme6
+      - vexme
     restart: unless-stopped
     depends_on:
       - influxdb
@@ -131,7 +131,7 @@ services:
       context: .
       dockerfile: "./alerts_docker"
     networks:
-      - vexme6
+      - vexme
     depends_on:
       - grafana
 

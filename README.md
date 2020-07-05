@@ -78,7 +78,35 @@ docker run --rm --network=influx -p 8088:8088 -p 8086:8086 -e INFLUXDB_BIND_ADDR
 
 # IPV6 network
 
-Create using 
-'''
+Create using (don't do this, just use a standard network and let nginx handle ipv6)
+```
 docker network create --subnet=172.18.0.0/16 --gateway=172.18.0.1 --ipv6 --subnet=2001:db8:2::/64 vexme6
-'''
+```
+
+# Setting up Kong
+
+## Grafana
+
+```
+curl -i -X POST http://localhost:8001/services --data name=grafana --data url='http://grafana:3000'
+```
+
+```
+curl -i -X POST http:/localhost:8001/services/grafana/routes --data 'paths[]=/grafana' --data 'name=grafana'
+```
+
+Uses Grafana's auth plugin. Place rate limit on this
+
+```
+curl -X POST http://localhost:8001/services/grafana/plugins --data "name=rate-limiting" --data "config.second=5" --data "config.hour=10000" --data "config.policy=local"
+```
+
+## auth
+
+```
+curl -i -X POST http://localhost:8001/services --data name=auth --data url='http://auth-api:5001'
+```
+
+```
+curl -i -X POST http:/localhost:8001/services/auth/routes --data 'paths[]=/auth/login/' --data 'name=auth' --data 'strip_path=false'
+```

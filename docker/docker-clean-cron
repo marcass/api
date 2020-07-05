@@ -17,14 +17,16 @@ docker image prune -f
 
 #create array of volumes
 declare -a volumes
-volumes = `docker volume ls| awk '{ print $2 }' | tail -n+2`
+volumes=`docker volume ls| awk '{ print $2 }' | tail -n+2`
 #remove unused volumes
-for i in $volumes; do if [ $i = "influx" ] || [ $i = "docker_grafana-storage" ]; then echo "skipping"; else `docker volume rm $i`; fi; done
-
-#rebuild images
-#cd $API_PATH
-#docker-compose build --pull
-#docker pull pantsel/konga
+for i in $volumes
+    do
+        if [ $i = "influx" ] || [ $i = "docker_grafana-storage" ] || [ $i = "kong_kong_data" ]
+            then echo "skipping $i"
+            else `docker volume rm $i`
+            #else echo "removing $i"
+        fi
+    done
 
 #restart services
 systemctl start $KONG
