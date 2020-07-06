@@ -108,5 +108,20 @@ curl -i -X POST http://localhost:8001/services --data name=auth --data url='http
 ```
 
 ```
-curl -i -X POST http:/localhost:8001/services/auth/routes --data 'paths[]=/auth/login/' --data 'name=auth' --data 'strip_path=false'
+curl -i -X POST http:/localhost:8001/services/auth/routes --data 'paths[]=/auth/login' --data 'name=auth' --data 'strip_path=false'
 ```
+
+## Senor data
+
+```
+curl -i -X POST http://localhost:8001/services --data name=data_in --data url='http://sensor-api:5002'
+```
+
+```
+curl -i -X POST http:/localhost:8001/services/data_in/routes --data 'paths[]=/data' --data 'name=data' --data 'strip_path=false'
+```
+
+### Tank data
+
+
+Perform a rewrite in nginx via proxy_pass
