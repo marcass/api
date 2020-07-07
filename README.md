@@ -123,5 +123,13 @@ curl -i -X POST http:/localhost:8001/services/data_in/routes --data 'paths[]=/da
 
 ### Tank data
 
+```
+curl -i -X POST http://localhost:8001/services --data name=tanks_in --data url='http://tank-ingress-api:5003'
+```
+
+```
+curl -i -X POST http:/localhost:8001/services/tanks_in/routes --data 'paths[]=/marcus' --data 'name=tank_data' --data 'strip_path=false'
+```
+
 
 Perform a rewrite in nginx via proxy_pass
