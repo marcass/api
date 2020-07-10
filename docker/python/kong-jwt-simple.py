@@ -68,7 +68,7 @@ def auth():
         # get group
         try:
             # in order to test do curl -i --user name:password http://localhost:8000/jwt-stuff/<name>/acls
-            x = requests.get('https://skibo.duckdns.org/api/jwt-stuff/'+username+'/acls', auth=HTTPBasicAuth(username, password))
+            x = requests.get('https://skibo.duckdns.org/api/jwt-stuff/consumers/'+username+'/acls', auth=HTTPBasicAuth(username, password))
             if x.status_code == 200:
                 # print('group get')
                 # print (x.text)
