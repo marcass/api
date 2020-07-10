@@ -173,6 +173,21 @@ curl -i -X PATCH localhost:8001/plugins/fef076d1-9d96-4a82-bab2-e352607df70c --d
 
 ### Add consumer to group
 
+```
+curl -X POST http://localhost:8001/consumers/{consumer}/acls --data "group=<group>"
+```
+
 
 ### Add a route for retreiving data for consumer
 
+
+```
+curl -i -X POST http://localhost:8001/services --data name=jwt-stuff --data url='http://localhost:8001'
+```
+
+```
+curl -i -X POST http://localhost:8001/services/jwt-stuff/routes --data 'paths[]=/jwt-stuff' --data 'name=jwt-stuff'
+```
+
+```
+curl -X POST http://localhost:8001/services/jwt-stuff/plugins --data "name=basic-auth" --data "config.hide_credentials=true"
