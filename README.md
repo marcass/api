@@ -74,7 +74,7 @@ docker run --rm --network=influx -p 8088:8088 -p 8086:8086 -e INFLUXDB_BIND_ADDR
  Querieying Kong for stuff:
  ```
  curl localhost:8001/routes | python -m json.tool
-'''
+```
 
 # IPV6 network
 
@@ -118,7 +118,7 @@ curl -i -X POST http://localhost:8001/services --data name=data_in --data url='h
 ```
 
 ```
-curl -i -X POST http:/localhost:8001/services/data_in/routes --data 'paths[]=/data' --data 'name=data' --data 'strip_path=false'
+curl -i -X POST http://localhost:8001/services/data_in/routes --data 'paths[]=/data' --data 'name=data' --data 'strip_path=false'
 ```
 
 ### Tank data
@@ -132,4 +132,47 @@ curl -i -X POST http:/localhost:8001/services/tanks_in/routes --data 'paths[]=/m
 ```
 
 
-Perform a rewrite in nginx via proxy_pass
+## Consumers
+
+* Used for auth of data providers
+* Types are:
+   * software user
+   * site user
+   * admin user
+
+
+```
+curl -i -X POST http://localhost:8001/consumers/   --data "username=<username>"
+```
+
+```
+curl -i -X POST  http://localhost:8001/consumers/<user>/basic-auth --data "username=<user>" --data "password=<pass>"
+```
+
+## JWT
+
+### Set up jwt plugin
+
+```
+curl -i -X POST localhost:8001/routes/data/plugins --data "name=jwt"
+```
+
+### Add to a route
+
+### Disabe
+
+```
+curl -i -X PATCH localhost:8001/plugins/fef076d1-9d96-4a82-bab2-e352607df70c --data "enabled=false"
+```
+
+### Set up ACL for groups
+
+```
+curl -i -X PATCH localhost:8001/plugins/fef076d1-9d96-4a82-bab2-e352607df70c --data "enabled=false"
+```
+
+### Add consumer to group
+
+
+### Add a route for retreiving data for consumer
+
