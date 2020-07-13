@@ -61,36 +61,40 @@ def auth():
         if not password:
             return jsonify({"msg": "Missing password parameter"}), 400
         # setup something to creat the user variable here
-        # print (username)
-        # print (password)
+        print ('creds:')
+        print (username)
+        print (password)
         # user = 'test-user'
         # return jsonify(content), 200
         # get group
-        try:
-            # in order to test do curl -i --user name:password http://localhost:8000/jwt-stuff/<name>/acls
-            x = requests.get('https://skibo.duckdns.org/api/jwt-stuff/consumers/'+username+'/acls', auth=HTTPBasicAuth(username, password))
-            if x.status_code == 200:
-                # print('group get')
-                # print (x.text)
-                data = json.loads(x.text)['data']
-                group = []
-                for i in data:
-                    if i['group']:
-                        group.append(i['group'])
-                # group = data['data'][0]['group']
-                # print('groups')
-                # print (group)
-            else:
-                # print 'fucked up with a bad username'
-                # print(x.status_code)
-                return jsonify({"msg": x.status_code}), 401
-        except:
-            print("couldn't get group")
-            return jsonify({'Status':'Error', 'Message':'No group returned'}), 403
+        #try:
+        # in order to test do curl -i --user name:password http://localhost:8000/jwt-stuff/consuers/<name>/acls
+        print('about to get group data')
+        x = requests.get('https://skibo.duckdns.org/api/jwt-stuff/consumers/'+username+'/acls', auth=HTTPBasicAuth(username, password))
+        print ('status code is: ')
+        print (x.status_code)
+        if x.status_code == 200:
+            print('group get')
+            print (x.text)
+            data = json.loads(x.text)['data']
+            print (data)
+            group = []
+            for i in data:
+                if i['group']:
+                    group.append(i['group'])
+            # group = data['data'][0]['group']
+            # print('groups')
+            print (group)
+        else:
+            print ('fucked up with a bad username')
+            # print(x.status_code)
+            return jsonify({"msg": x.status_code}), 401
+        #except:
+        print("couldn't get group")
+        return jsonify({'Status':'Error', 'Message':'No group returned'}), 403
         try:
             # get jwt stuff for making token
-            # assumes route setup in kong that allows a path of jwt, with a service that has un upstram path of /consumers
-            r = requests.get('https://skibo.duckdns.org/api/jwt-stuff/'+username+'/jwt', auth=HTTPBasicAuth(username, password))
+            r = requests.get('https://skibo.duckdns.org/api/jwt-stuff/consumers/'+username+'/jwt', auth=HTTPBasicAuth(username, password))
             # r = requests.post('http://kong:8000/auth/'+username, json={'username': 'auth', 'password': 'iamauth'})
             if r.status_code == 200:
                 # print('jwt text')
