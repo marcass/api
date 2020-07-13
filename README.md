@@ -111,7 +111,7 @@ curl -i -X POST http://localhost:8001/services --data name=auth --data url='http
 curl -i -X POST http:/localhost:8001/services/auth/routes --data 'paths[]=/auth/login' --data 'name=auth' --data 'strip_path=false'
 ```
 
-## Senor data
+## Sesnor data
 
 ```
 curl -i -X POST http://localhost:8001/services --data name=data_in --data url='http://sensor-api:5002'
@@ -151,24 +151,28 @@ curl -i -X POST  http://localhost:8001/consumers/<user>/basic-auth --data "usern
 
 ## JWT
 
-### Set up jwt plugin
+### Set up jwt plugin on data route
 
 ```
 curl -i -X POST localhost:8001/routes/data/plugins --data "name=jwt"
 ```
 
-### Add to a route
-
-### Disabe
+#### Disable
 
 ```
 curl -i -X PATCH localhost:8001/plugins/fef076d1-9d96-4a82-bab2-e352607df70c --data "enabled=false"
+```
+
+### Add jwt to consumer
+
+```
+curl -i -X POST http://localhost:8001/consumers/<user>/jwt
 ```
 
 ### Set up ACL for groups
 
 ```
-curl -i -X PATCH localhost:8001/plugins/fef076d1-9d96-4a82-bab2-e352607df70c --data "enabled=false"
+
 ```
 
 ### Add consumer to group
