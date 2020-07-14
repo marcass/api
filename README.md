@@ -172,7 +172,7 @@ curl -i -X POST http://localhost:8001/consumers/<user>/jwt
 ### Set up ACL for groups
 
 ```
-
+curl -i -X POST http://localhost:8001/routes/{route}/plugins --data "name=acl" --data "config.whitelist=group1" --data "config.whitelist=group2" --data "config.hide_groups_header=true"
 ```
 
 ### Add consumer to group
