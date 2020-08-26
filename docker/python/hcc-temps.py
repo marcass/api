@@ -76,13 +76,22 @@ def on_connect(client, userdata, flags, rc):
 def on_message(client, userdata, msg):
     try:
         message = ast.literal_eval(msg.payload.decode('UTF-8'))
+    except:
+        print('Could not decode message')
+    if 'boiler' in msg.topic:
+        try:
+            post_data(message)
+        except:
+            print('Problem with posting message from boiler')
+            pass
+    try:
         sensor = sensor_names[message['name']]
         temp = float(message['signal'])
         data = {'measurement': 'things', 'tags':{'type':'temp',
                 'sensorID':sensor, 'site': 'marcus'}, 'value':temp}
         post_data(data)
     except:
-       print('unable to fomrat message for posting')
+        print('unable to format message for posting')
 
 
 #subscribe to broker and test for messages below alert values
