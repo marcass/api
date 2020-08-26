@@ -1,6 +1,8 @@
 #!/bin/bash
 
 #run as root
+# eg add "0 1 * * 1 /home/mw/git/api/docker/docker-clean-cron" to crontab
+
 #variables
 API="api-influx-docker-compose"
 KONG="kong-docker-compose"
@@ -23,7 +25,7 @@ for i in $volumes
     do
         if [ $i = "influx" ] || [ $i = "docker_grafana-storage" ] || [ $i = "kong_kong_data" ]
             then echo "skipping $i"
-            else `docker volume rm $i`
+	    else `docker volume rm -f $i` && echo "removed $i"
             #else echo "removing $i"
         fi
     done
