@@ -51,8 +51,8 @@ def post_data(data):
     ret = requests.post(DATA_URL, json = data, headers = headers)
     #print ('JWT = '+str(jwt))
     #print ('First response is: ' +str(ret))
-    if '200' in str(ret):
-        print('Data posted')
+    #if '200' in str(ret):
+        #print('Data posted')
         #print(data)
     if '200' not in str(ret):
         print('Oops, not authenticated')
@@ -80,18 +80,20 @@ def on_message(client, userdata, msg):
         print('Could not decode message')
     if 'boiler' in msg.topic:
         try:
+            #print('Posting boiler data')
             post_data(message)
         except:
             print('Problem with posting message from boiler')
             pass
-    try:
-        sensor = sensor_names[message['name']]
-        temp = float(message['signal'])
-        data = {'measurement': 'things', 'tags':{'type':'temp',
-                'sensorID':sensor, 'site': 'marcus'}, 'value':temp}
-        post_data(data)
-    except:
-        print('unable to format message for posting')
+    else:
+        try:
+            sensor = sensor_names[message['name']]
+            temp = float(message['signal'])
+            data = {'measurement': 'things', 'tags':{'type':'temp',
+                    'sensorID':sensor, 'site': 'marcus'}, 'value':temp}
+            post_data(data)
+        except:
+            print('unable to format message for posting')
 
 
 #subscribe to broker and test for messages below alert values
