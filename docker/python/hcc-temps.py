@@ -16,6 +16,13 @@ import requests
 # {"timestamp":1549074076755,"name":"01000802055D6B10","signature":"T01000802055D6B10","signal":24.875}
 # {"timestamp":1549074077979,"name":"110008020565B910","signature":"T110008020565B910","signal":23.75}
 
+# {"timestamp":1616473399054,"name":"lounge","signature":"c904c1be49128f48ec7","mode":"Heating","state":"OFF","thermostatSignal":0.0,"currentTemperature":21.875,"setpointTemperature":10.0,"enabled":false,"onHold":false,"voting":true,"deviation.setpoint":0.0,"deviation.enabled":false,"deviation.voting":false}
+# {"timestamp":1616473400228,"name":"bed_kids","signature":"8b77fd361687f07faa4","mode":"Heating","state":"OFF","thermostatSignal":0.0,"currentTemperature":19.8125,"setpointTemperature":10.0,"enabled":false,"onHold":false,"voting":true,"deviation.setpoint":0.0,"deviation.enabled":false,"deviation.voting":false}
+# {"timestamp":1616473401383,"name":"spare_room","signature":"7fbe653d161f6e596d4","mode":"Heating","state":"OFF","thermostatSignal":0.0,"currentTemperature":20.75,"setpointTemperature":10.0,"enabled":false,"onHold":false,"voting":true,"deviation.setpoint":0.0,"deviation.enabled":false,"deviation.voting":false}
+# {"timestamp":1616473402538,"name":"bed_master","signature":"ccfb820c067901cc375","mode":"Heating","state":"OFF","thermostatSignal":0.0,"currentTemperature":21.375,"setpointTemperature":10.0,"enabled":false,"onHold":false,"voting":true,"deviation.setpoint":0.0,"deviation.enabled":false,"deviation.voting":false}
+# {"timestamp":1616473403726,"name":"hall","signature":"5ab06702d8b598415f7","mode":"Heating","state":"OFF","thermostatSignal":0.0,"currentTemperature":20.5,"setpointTemperature":10.0,"enabled":false,"onHold":false,"voting":true,"deviation.setpoint":0.0,"deviation.enabled":false,"deviation.voting":false}
+# {"timestamp":1616473396809,"name":"downstairs","signature":"e056ec84dfbbe69b5ec","mode":"Heating","state":"OFF","thermostatSignal":0.0,"currentTemperature":19.6875,"setpointTemperature":10.0,"enabled":false,"onHold":false,"voting":true,"deviation.setpoint":0.0,"deviation.enabled":false,"deviation.voting":false}
+
 sensor_names = {'5A00080205816410':'hall', '60000003AEF86C28': 'downstairs', '9A000003AEE20728': 'outside',
                 'DE0008018486AF10': 'lounge', '01000801848CC710': 'harris', '01000802055D6B10': 'spare',
                 '110008020565B910': 'marcus'}
@@ -87,11 +94,20 @@ def on_message(client, userdata, msg):
             pass
     else:
         try:
-            sensor = sensor_names[message['name']]
-            temp = float(message['signal'])
+            sensor = message['name']
+            temp = float(message['currentTemperature'])
             data = {'measurement': 'things', 'tags':{'type':'temp',
                     'sensorID':sensor, 'site': 'marcus'}, 'value':temp}
             post_data(data)
+            # data = {'measurement': 'things', 'tags':{'type':'state',
+            #         'sensorID':sensor, 'site': 'marcus'}, 'value':message['state']}
+            # post_data(data)
+        # try:
+        #     sensor = sensor_names[message['name']]
+        #     temp = float(message['signal'])
+        #     data = {'measurement': 'things', 'tags':{'type':'temp',
+        #             'sensorID':sensor, 'site': 'marcus'}, 'value':temp}
+        #     post_data(data)
         except:
             print('unable to format message for posting')
 
