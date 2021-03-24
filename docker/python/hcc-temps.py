@@ -92,26 +92,27 @@ def on_message(client, userdata, msg):
         # print(message)
     except:
        print('Could not decode message')
-    if 'boiler' in msg.topic:
-        try:
-            #print('Posting boiler data')
-            post_data(message)
-        except:
-            print('Problem with posting message from boiler')
-            pass
-    else:
-        try:
-            sensor = message['name']
-            temp = float(message['currentTemperature'])
-            data = {'measurement': 'things', 'tags':{'type':'temp', 'sensorID':sensor, 'site': 'marcus'}, 'value':temp}
-            post_data(data)
-                #try:
-            if message['state'] == "ON":
-                data = {'measurement': 'things', 'tags':{'type':'state', 'sensorID':sensor, 'site': 'marcus'}, 'value':message['state']}
-                post_data(data)
-        except:
-            print('Unable to parse state info from thermostat')
-            pass
+    # if 'boiler' in msg.topic:
+    #     try:
+    #         #print('Posting boiler data')
+    #         post_data(message)
+    #     except:
+    #         print('Problem with posting message from boiler')
+    #         pass
+    # else:
+    try:
+        sensor = message['name']
+        temp = float(message['currentTemperature'])
+        data = {'measurement': 'things', 'tags':{'type':'temp', 'sensorID':sensor, 'site': 'marcus'}, 'value':temp}
+        post_data(data)
+    except:
+        print ('Unable to parse temperature data for posting')
+        pass
+    try:
+        data = {'measurement': 'things', 'tags':{'type':'state', 'sensorID':sensor, 'site': 'marcus'}, 'value':message['state']}
+        post_data(data)
+    except:
+        print('Unable to parse state info from thermostat')
         # try:
         #     sensor = sensor_names[message['name']]
         #     temp = float(message['signal'])
