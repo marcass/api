@@ -81,19 +81,17 @@ def on_connect(client, userdata, flags, rc):
 
 # use to auth through endpoint
 def on_message(client, userdata, msg):
-    #try:
-#    print (msg.payload)
-    my_str = msg.payload.decode("UTF-8")
-    my_str = my_str.replace('true', '1')
-    my_str = my_str.replace('false','0')
-    #print(my_str)
-    message = ast.literal_eval(my_str)
-    #message = eval(my_str)
-    print(message)
-#    message = ast.literal_eval(msg.payload.decode('UTF-8'))
-    #print(message)
-    #except:
-   #     print('Could not decode message')
+    try:
+        my_str = msg.payload.decode("UTF-8")
+        # replace glitchy terms for json - should have used json.loads i guess
+        if 'true' in my_str:
+            my_str = my_str.replace('true', '1')
+        if 'false' in my_str:
+            my_str = my_str.replace('false','0')
+        message = ast.literal_eval(my_str)
+        print(message)
+    except:
+       print('Could not decode message')
     if 'boiler' in msg.topic:
         try:
             #print('Posting boiler data')
@@ -102,27 +100,27 @@ def on_message(client, userdata, msg):
             print('Problem with posting message from boiler')
             pass
     else:
-       # try:
-        print(message)
-        sensor = message['name']
-        temp = float(message['currentTemperature'])
-        data = {'measurement': 'things', 'tags':{'type':'temp', 'sensorID':sensor, 'site': 'marcus'}, 'value':temp}
-        post_data(data)
-            #try:
-        if message['state'] == "ON":
-            data = {'measurement': 'things', 'tags':{'type':'state', 'sensorID':sensor, 'site': 'marcus'}, 'value':message['state']}
+        try:
+            print(message)
+            sensor = message['name']
+            temp = float(message['currentTemperature'])
+            data = {'measurement': 'things', 'tags':{'type':'temp', 'sensorID':sensor, 'site': 'marcus'}, 'value':temp}
             post_data(data)
-        #    except:
-        #       print('Unable to parse state info from thermostat')
-        #        pass
+                #try:
+            if message['state'] == "ON":
+                data = {'measurement': 'things', 'tags':{'type':'state', 'sensorID':sensor, 'site': 'marcus'}, 'value':message['state']}
+                post_data(data)
+                except:
+                    print('Unable to parse state info from thermostat')
+                    pass
         # try:
         #     sensor = sensor_names[message['name']]
         #     temp = float(message['signal'])
         #     data = {'measurement': 'things', 'tags':{'type':'temp',
         #             'sensorID':sensor, 'site': 'marcus'}, 'value':temp}
         #     post_data(data)
-        #except:
-        #    print('unable to format message for posting')
+        except:
+            print('unable to format message for posting')
 
 
 #subscribe to broker and test for messages below alert values
