@@ -96,12 +96,15 @@ def on_message(client, userdata, msg):
         try:
             sensor = message['name']
             temp = float(message['currentTemperature'])
-            data = {'measurement': 'things', 'tags':{'type':'temp',
-                    'sensorID':sensor, 'site': 'marcus'}, 'value':temp}
+            data = {'measurement': 'things', 'tags':{'type':'temp', 'sensorID':sensor, 'site': 'marcus'}, 'value':temp}
             post_data(data)
-            # data = {'measurement': 'things', 'tags':{'type':'state',
-            #         'sensorID':sensor, 'site': 'marcus'}, 'value':message['state']}
-            # post_data(data)
+            try:
+                if message['state'] = "ON":
+                    data = {'measurement': 'things', 'tags':{'type':'state', 'sensorID':sensor, 'site': 'marcus'}, 'value':message['state']}
+                    post_data(data)
+            except:
+                print('Unable to parse state info from thermostat')
+                pass
         # try:
         #     sensor = sensor_names[message['name']]
         #     temp = float(message['signal'])
