@@ -89,7 +89,7 @@ def on_message(client, userdata, msg):
         if 'false' in my_str:
             my_str = my_str.replace('false','0')
         message = ast.literal_eval(my_str)
-        print(message)
+        # print(message)
     except:
        print('Could not decode message')
     if 'boiler' in msg.topic:
