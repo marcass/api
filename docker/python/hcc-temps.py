@@ -119,8 +119,8 @@ def on_message(client, userdata, msg):
         #     data = {'measurement': 'things', 'tags':{'type':'temp',
         #             'sensorID':sensor, 'site': 'marcus'}, 'value':temp}
         #     post_data(data)
-    except:
-        print('unable to format message for posting')
+        # except:
+        #     print('unable to format message for posting')
 
 
 #subscribe to broker and test for messages below alert values
