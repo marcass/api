@@ -101,7 +101,6 @@ def on_message(client, userdata, msg):
             pass
     else:
         try:
-            print(message)
             sensor = message['name']
             temp = float(message['currentTemperature'])
             data = {'measurement': 'things', 'tags':{'type':'temp', 'sensorID':sensor, 'site': 'marcus'}, 'value':temp}
