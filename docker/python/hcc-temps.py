@@ -109,7 +109,7 @@ def on_message(client, userdata, msg):
             print ('Unable to parse temperature data for posting')
             pass
         try:
-            data = {'measurement': 'things', 'tags':{'type':'state', 'sensorID':sensor, 'site': 'marcus'}, 'value':message['state']}
+            data = {'measurement': 'things', 'tags':{'type':'temp', 'sensorID':sensor, 'site': 'hcc'}, 'value':message['deviation.setpoint']}
             post_data(data)
         except:
             print('Unable to parse state info from thermostat')
