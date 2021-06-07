@@ -17,7 +17,7 @@ services:
   # Datastore
   ##########################################
   influxdb:
-    image: influxdb:latest
+    image: influxdb:1.8
     restart: unless-stopped
     # needs a network for a container to perform backups
     networks:
