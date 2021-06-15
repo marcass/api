@@ -14,6 +14,22 @@ networks:
 services:
 
   ##########################################
+  # Webserver
+  ##########################################
+
+  services:
+    nginx: 
+      image: nginx:latest
+      container_name: nginx
+      volumes:
+        # place forwarder config file called nginx_forwarder.conf in the same dir as working dir docker-compose.yml file is in
+        - ./nginx_forwarder.conf:/etc/nginx/conf.d/nginx_forwader.conf
+      ports:
+        - 80:80
+        - 443:443
+        
+
+  ##########################################
   # Datastore
   ##########################################
   influxdb:
