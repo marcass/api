@@ -3,3 +3,4 @@
 creds.py
 influx_bak
 *PASSWORD*
+*certbot/*
