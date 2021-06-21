@@ -4,3 +4,5 @@ creds.py
 influx_bak
 *PASSWORD*
 *certbot/*
+options-ssl-nginx.conf
+ssl-dhparams.pem
