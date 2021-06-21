@@ -8,19 +8,19 @@ services:
   # make sure you run dummy cert script at first run
   ##########################################
 
-  nginx: 
-    image: nginx:latest
-    container_name: nginx
-    volumes:
-      # place forwarder config file called nginx_forwarder.conf in the same dir as working dir docker-compose.yml file is in
-      - ./data/nginx_forwarder.conf:/etc/nginx/conf.d/nginx_forwader.conf
-      - ./data/certbot/conf:/etc/letsencrypt
-      - ./data/certbot/www:/var/www/certbot
-    ports:
-      - 80:80
-      - 443:443
-    # reload daemon to account for cert changes
-    command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
+  # nginx: 
+  #   image: nginx:latest
+  #   container_name: nginx
+  #   volumes:
+  #     # place forwarder config file called nginx_forwarder.conf in the same dir as working dir docker-compose.yml file is in
+  #     - ./data/nginx_forwarder.conf:/etc/nginx/conf.d/nginx_forwader.conf
+  #     - ./data/certbot/conf:/etc/letsencrypt
+  #     - ./data/certbot/www:/var/www/certbot
+  #   ports:
+  #     - 80:80
+  #     - 443:443
+  #   # reload daemon to account for cert changes
+  #   command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
       
   certbot:
     image: certbot/certbot
@@ -28,6 +28,6 @@ services:
       - ./data/certbot/conf:/etc/letsencrypt
       - ./data/certbot/www:/var/www/certbot
     # check for cert expiry
-    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+    # entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
 
 
