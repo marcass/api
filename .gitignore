@@ -6,3 +6,4 @@ influx_bak
 *certbot/*
 options-ssl-nginx.conf
 ssl-dhparams.pem
+__pycache__/*
