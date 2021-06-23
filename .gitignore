@@ -7,3 +7,4 @@ influx_bak
 options-ssl-nginx.conf
 ssl-dhparams.pem
 __pycache__/*
+*.swp

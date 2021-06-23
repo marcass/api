@@ -23,5 +23,5 @@ curl -i -X POST \
     --data 'url=http://grafana:3000'
 
 curl -i -X POST http://localhost:8001/services/grafana/routes \
-    --data 'paths[]=/api/grafana' \
+    --data 'paths[]=/grafana' \
     --data name=grafana-route
