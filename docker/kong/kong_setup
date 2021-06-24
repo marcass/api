@@ -13,7 +13,8 @@ curl -i -X POST \
 
 curl -i -X POST http://localhost:8001/services/Tanks-service/routes \
     --data 'paths[]=/marcus' \
-    --data name=tank-route
+    --data name=tank-route \
+    --data service=Tanks-service 
 
 #grafana
 
@@ -24,4 +25,5 @@ curl -i -X POST \
 
 curl -i -X POST http://localhost:8001/services/grafana/routes \
     --data 'paths[]=/grafana' \
-    --data name=grafana-route
+    --data name=grafana-route \
+    --data service=grafana
