@@ -47,8 +47,10 @@ services:
     depends_on:
       - influxdb
       # - prometheus
-    expose:
-      - "3000"
+    ports:
+      - "3000:3000"
+    # expose:
+    #   - "3000"
     # https://grafana.com/docs/installation/docker/#migration-from-a-previous-version-of-the-docker-container-to-5-1-or-later
     # user: "104"
     volumes:
@@ -86,10 +88,10 @@ services:
       - vexme
     depends_on:
       - influxdb
-    expose:
-      - "5001"
-    # ports:
-    #   - "5001:5001"
+    # expose:
+    #   - "5001"
+    ports:
+      - "5001:5001"
   sensor-api:
     build:
       context: .
@@ -99,8 +101,10 @@ services:
     restart: unless-stopped
     depends_on:
       - influxdb
-    expose:
-      - "5002"
+    # expose:
+    #   - "5002"
+    ports:
+      - "5002:5002"
   tank-ingress-api:
     build:
       context: .
@@ -110,8 +114,10 @@ services:
     restart: unless-stopped
     depends_on:
       - influxdb
-    expose:
-      - "5003"
+    ports:
+      - "5003:5003"
+    # expose:
+    #   - "5003"
 
 
 #  door-api:
