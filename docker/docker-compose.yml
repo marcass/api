@@ -87,7 +87,7 @@ services:
     depends_on:
       - influxdb
     expose:
-      - "5001"
+      - "5006"
     # ports:
     #   - "5001:5001"
   sensor-api:
@@ -100,7 +100,7 @@ services:
     depends_on:
       - influxdb
     expose:
-      - "5002"
+      - "5007"
   tank-ingress-api:
     build:
       context: .
@@ -111,7 +111,7 @@ services:
     depends_on:
       - influxdb
     expose:
-      - "5003"
+      - "5008"
 
 
 #  door-api:

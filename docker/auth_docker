@@ -4,4 +4,4 @@ COPY auth_req.txt .
 RUN pip install --upgrade pip --no-cache-dir -r auth_req.txt
 COPY python .
 # https://stackoverflow.com/questions/43925487/how-to-run-gunicorn-on-docker
-CMD ["gunicorn", "-w", "2", "-b", "0.0.0.0:5001", "kong-jwt-simple:app"]
+CMD ["gunicorn", "-w", "2", "-b", "0.0.0.0:5006", "kong-jwt-simple:app"]
