@@ -5,4 +5,4 @@ COPY python .
 # https://stackoverflow.com/questions/43925487/how-to-run-gunicorn-on-docker
 #CMD ["gunicorn", "-w", "2", "-b", "127.0.0.1:5003", "tanks_unauth:app"]
 #needs to listen on external interface
-CMD ["gunicorn", "-w", "2", "-b", "0.0.0.0:5003", "tanks_unauth:app"]
+CMD ["gunicorn", "-w", "2", "-b", "0.0.0.0:5008", "tanks_unauth:app"]
