@@ -52,7 +52,8 @@ curl -i -X POST \
 curl -i -X POST http://localhost:8001/services/auth/routes \
     --data 'paths[]=/auth/login' \
     --data name=auth-route \
-    --data service=auth
+    --data service=auth \
+    --data strip_path=false
 
 # jwt
 curl -i -X POST \
@@ -60,10 +61,10 @@ curl -i -X POST \
     --data 'name=jwt-stuff' \
     --data 'url=http://localhost:8001'
 
-curl -i -X POST http://localhost:8001/services/auth/routes \
+curl -i -X POST http://localhost:8001/services/jwt-stuff/routes \
     --data 'paths[]=/jwt-stuff' \
-    --data name=ajwt-route \
-    --data service=auth
+    --data name=jwt-route \
+    --data service=jwt-stuff
 
 #sensor data
 curl -i -X POST \
@@ -74,7 +75,8 @@ curl -i -X POST \
 curl -i -X POST http://localhost:8001/services/sensors/routes \
     --data 'paths[]=/data' \
     --data name=data-route \
-    --data service=sensors
+    --data service=sensors \
+    --data strip_path=false
 
 # Add consumers
 
@@ -86,6 +88,9 @@ curl -i -X POST \
     --url http://localhost:8001/consumers/python/basic-auth/ \
     --data "username=python" \
     --data "password=<password>"
+
+# Get jwt creds setup for consumers
+curl -X POST http://localhost:8001/consumers/{consumer}/jwt -H "Content-Type: application/x-www-form-urlencoded"
 
 # Secure rotues
 

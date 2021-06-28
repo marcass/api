@@ -68,7 +68,7 @@ def auth():
         # return jsonify(content), 200
         # get group
         try:
-            # in order to test do curl -i --user name:password http://localhost:8000/jwt-stuff/consuers/<name>/acls
+            # in order to test do curl -i --user name:password http://localhost:8000/jwt-stuff/consumers/<name>/acls
             print('about to get group data')
             x = requests.get(URL+username+'/acls', auth=HTTPBasicAuth(username, password))
             #x = requests.get('https://skibo.duckdns.org/api/jwt-stuff/consumers/'+username+'/acls', auth=HTTPBasicAuth(username, password))
