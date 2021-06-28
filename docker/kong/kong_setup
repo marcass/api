@@ -78,4 +78,13 @@ curl -i -X POST http://localhost:8001/services/sensors/routes \
 
 # Add consumers
 
+curl -i -X POST \
+    --url http://localhost:8001/consumers/ \
+    --data "username=python"
+
+curl -i -X POST \
+    --url http://localhost:8001/consumers/python/basic-auth/ \
+    --data "username=python" \
+    --data "password=<password>"
+
 # Secure rotues
