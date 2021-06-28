@@ -1,20 +1,33 @@
 #!/bin/bash
 
+# configure SELinux to allow ports
+#Auth
+semanage port -a -t http_port_t -p tcp 5006
+# Senosrs
+semanage port -a -t http_port_t -p tcp 5007
+#  Tanks
+semanage port -a -t http_port_t -p tcp 5008
+#Grafana
+semanage port -a -t http_port_t -p tcp 3000
+# Influx?
+semanage port -a -t http_port_t -p tcp 8086
+
 # Need to add services for routes after fresh kong install
 
 # Tanks service
 
 curl -i -X POST \
     --url http://localhost:8001/services/ \
-    --data 'name=Tanks-service' \
-    --data 'url=http://tank-ingress-api:5003'
+    --data 'name=tanks' \
+    --data 'url=http://tank-ingress-api:5008'
 
 #tanks route
 
-curl -i -X POST http://localhost:8001/services/Tanks-service/routes \
+curl -i -X POST http://localhost:8001/services/tanks/routes \
     --data 'paths[]=/marcus' \
     --data name=tank-route \
-    --data service=Tanks-service 
+    --data service=tanks \
+    --data strip_path=false
 
 #grafana
 
