@@ -29,6 +29,8 @@ curl -i -X POST http://localhost:8001/services/tanks/routes \
     --data service=tanks \
     --data strip_path=false
 
+    # Test with: curl -d '{"site": "rob_tanks", "value": "PY;6;R;3.94;"}' -H "Content-Type: application/json" -i -X POST https://wilsonbay.duckdns.org/marcus
+
 #grafana
 
 curl -i -X POST \
