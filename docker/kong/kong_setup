@@ -85,8 +85,17 @@ curl -i -X POST \
     --data "username=python"
 
 curl -i -X POST \
+    --url http://localhost:8001/consumers/ \
+    --data "username=sensor"
+
+curl -i -X POST \
     --url http://localhost:8001/consumers/python/basic-auth/ \
     --data "username=python" \
+    --data "password=<password>"
+
+curl -i -X POST \
+    --url http://localhost:8001/consumers/sensor/basic-auth/ \
+    --data "username=sensor" \
     --data "password=<password>"
 
 # Get jwt creds setup for consumers
@@ -94,3 +103,26 @@ curl -X POST http://localhost:8001/consumers/{consumer}/jwt -H "Content-Type: ap
 
 # Secure rotues
 
+# Auth
+curl -X POST http://localhost:8001/services/auth/plugins \
+    --data "name=basic-auth"  \
+    --data "config.hide_credentials=true"
+
+curl -X POST http://localhost:8001/services/jwt-stuff/plugins \
+    --data "name=basic-auth"  \
+    --data "config.hide_credentials=true"
+
+# jwt
+# tanks
+curl -X POST http://localhost:8001/routes/tank-route/plugins \
+    --data "name=jwt"  \
+    --data "config.secret_is_base64=false" \
+    --data "config.run_on_preflight=true" \
+    --data "config.claims_to_verify=exp"
+
+# data
+curl -X POST http://localhost:8001/routes/data-route/plugins \
+    --data "name=jwt"  \
+    --data "config.secret_is_base64=false" \
+    --data "config.run_on_preflight=true" \
+    --data "config.claims_to_verify=exp"
