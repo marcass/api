@@ -31,6 +31,9 @@ services:
     ports:
       - "8086:8086"
       - "8088:8088"
+    # need this so I can connect from host system
+    env_file:
+      - .env
     volumes:
       - influx:/var/lib/influxdb
 
