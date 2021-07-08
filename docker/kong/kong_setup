@@ -78,6 +78,19 @@ curl -i -X POST http://localhost:8001/services/sensors/routes \
     --data service=sensors \
     --data strip_path=false
 
+# INflux data for dz
+curl -i -X POST \
+    --url http://localhost:8001/services/ \
+    --data 'name=dz-infulx' \
+    --data 'url=http://localhost:8086'
+
+curl -i -X POST http://localhost:8001/services/dz-influx/routes \
+    --data 'paths[]=/dz-influx' \
+    --data name=dz-route \
+    --data service=dz-influx \
+    --data strip_path=false
+
+
 # Add consumers
 
 curl -i -X POST \
