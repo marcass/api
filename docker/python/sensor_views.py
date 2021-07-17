@@ -10,11 +10,14 @@ def update_data():
     '''
     Writes data to influx from remote sensor
     '''
-    #print("SEnsor data incoming")
+    #print("Sensor data incoming")
     # print (request.headers)
-    content = request.get_json(silent=False)
-    # print content
-    return jsonify(sensors.write_data(content)), 200
+    content = request.data.decode("utf-8", errors='replace')
+    # content = request.get_json(silent=False)
+    if len(content) < 100:
+        return jsonify(sensors.write_data(content)), 200
+    else:
+        return jsonify({'message':'malformed string'}), 400
 
 @app.route("/data/tanks", methods=['POST',])
 def update_data_tanks():
