@@ -21,8 +21,13 @@ def update_data_tanks():
     '''
     Writes data to influx from tank remote sensor
     '''
-    content = request.get_json(silent=False)
-    return jsonify(sensors.sort_tank_data(content)), 200
+    content = request.data.decode("utf-8", errors='replace')
+    # content = request.get_json(silent=False)
+    # sift lora crap
+    if len(content) < 100:
+        return jsonify(sensors.write_data(content)), 200
+    else:
+        return jsonify({'message':'malformed string'}), 400
 
 
 # @app.route("/data/values/types", methods=['GET',])
