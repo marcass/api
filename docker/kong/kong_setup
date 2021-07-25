@@ -1,0 +1,140 @@
+#!/bin/bash
+
+# configure SELinux to allow ports
+#Auth
+semanage port -a -t http_port_t -p tcp 5006
+# Senosrs
+semanage port -a -t http_port_t -p tcp 5007
+#  Tanks
+semanage port -a -t http_port_t -p tcp 5008
+#Grafana
+semanage port -a -t http_port_t -p tcp 3000
+# Influx?
+semanage port -a -t http_port_t -p tcp 8086
+
+# Need to add services for routes after fresh kong install
+
+# Tanks service
+
+curl -i -X POST \
+    --url http://localhost:8001/services/ \
+    --data 'name=tanks' \
+    --data 'url=http://tank-ingress-api:5008'
+
+#tanks route
+
+curl -i -X POST http://localhost:8001/services/tanks/routes \
+    --data 'paths[]=/marcus' \
+    --data name=tank-route \
+    --data service=tanks \
+    --data strip_path=false
+
+    # Test with: curl -d '{"site": "rob_tanks", "value": "PY;6;R;3.94;"}' -H "Content-Type: application/json" -i -X POST https://wilsonbay.duckdns.org/marcus
+
+#grafana
+
+curl -i -X POST \
+    --url http://localhost:8001/services/ \
+    --data 'name=grafana' \
+    --data 'url=http://grafana:3000'
+
+curl -i -X POST http://localhost:8001/services/grafana/routes \
+    --data 'paths[]=/grafana' \
+    --data name=grafana-route \
+    --data service=grafana
+
+# Auth
+curl -i -X POST \
+    --url http://localhost:8001/services/ \
+    --data 'name=auth' \
+    --data 'url=http://auth-api:5006'
+
+curl -i -X POST http://localhost:8001/services/auth/routes \
+    --data 'paths[]=/auth/login' \
+    --data name=auth-route \
+    --data service=auth \
+    --data strip_path=false
+
+# jwt
+curl -i -X POST \
+    --url http://localhost:8001/services/ \
+    --data 'name=jwt-stuff' \
+    --data 'url=http://localhost:8001'
+
+curl -i -X POST http://localhost:8001/services/jwt-stuff/routes \
+    --data 'paths[]=/jwt-stuff' \
+    --data name=jwt-route \
+    --data service=jwt-stuff
+
+#sensor data
+curl -i -X POST \
+    --url http://localhost:8001/services/ \
+    --data 'name=sensors' \
+    --data 'url=http://sensor-api:5007'
+
+curl -i -X POST http://localhost:8001/services/sensors/routes \
+    --data 'paths[]=/data' \
+    --data name=data-route \
+    --data service=sensors \
+    --data strip_path=false
+
+# INflux data for dz
+curl -i -X POST \
+    --url http://localhost:8001/services/ \
+    --data 'name=dz-influx' \
+    --data 'url=http://influxdb:8086'
+
+curl -i -X POST http://localhost:8001/services/dz-influx/routes \
+    --data 'paths[]=/dz-influx' \
+    --data name=dz-route \
+    --data service=dz-influx
+
+
+# Add consumers
+
+curl -i -X POST \
+    --url http://localhost:8001/consumers/ \
+    --data "username=python"
+
+curl -i -X POST \
+    --url http://localhost:8001/consumers/ \
+    --data "username=sensor"
+
+curl -i -X POST \
+    --url http://localhost:8001/consumers/python/basic-auth/ \
+    --data "username=python" \
+    --data "password=<password>"
+
+curl -i -X POST \
+    --url http://localhost:8001/consumers/sensor/basic-auth/ \
+    --data "username=sensor" \
+    --data "password=<password>"
+
+# Get jwt creds setup for consumers
+curl -X POST http://localhost:8001/consumers/{consumer}/jwt -H "Content-Type: application/x-www-form-urlencoded"
+
+# Secure rotues
+
+# Auth
+curl -X POST http://localhost:8001/services/auth/plugins \
+    --data "name=basic-auth"  \
+    --data "config.hide_credentials=true"
+
+curl -X POST http://localhost:8001/services/jwt-stuff/plugins \
+    --data "name=basic-auth"  \
+    --data "config.hide_credentials=true"
+
+# jwt
+# tanks
+curl -X POST http://localhost:8001/routes/tank-route/plugins \
+    --data "name=jwt"  \
+    --data "config.secret_is_base64=false" \
+    --data "config.run_on_preflight=true" \
+    --data "config.claims_to_verify=exp"
+
+# data
+curl -X POST http://localhost:8001/routes/data-route/plugins \
+    --data "name=jwt"  \
+    --data "config.secret_is_base64=false" \
+    --data "config.run_on_preflight=true" \
+    --data "config.claims_to_verify=exp"

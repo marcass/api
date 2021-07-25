@@ -1,0 +1,37 @@
+#!/bin/bash
+
+#run as root
+# eg add "0 1 * * 1 /home/mw/git/api/docker/docker-clean-cron" to crontab
+
+#variables
+API="api-influx-docker-compose"
+KONG="kong-docker-compose"
+API_PATH="/home/mw/git/api/docker"
+
+#Stop services
+systemctl stop $KONG
+systemctl stop $API
+
+#get rid of shit and start from clean slate
+#This deletes stuff in /var/lib/docker/overlay2
+docker container prune -f
+docker image prune -f
+
+#create array of volumes
+declare -a volumes
+volumes=`docker volume ls| awk '{ print $2 }' | tail -n+2`
+#remove unused volumes
+for i in $volumes
+    do
+        if [ $i = "influx" ] || [ $i = "docker_grafana-storage" ] || [ $i = "kong_kong_data" ]
+            then echo "skipping $i"
+	    else `docker volume rm -f $i` && echo "removed $i"
+            #else echo "removing $i"
+        fi
+    done
+
+#restart services
+systemctl start $KONG
+systemctl start $API
+
+exit

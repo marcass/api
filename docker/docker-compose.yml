@@ -1,31 +1,147 @@
-version: '3'
+version: '3.7'
+
+# connect to pre-esisting network. if not created create by:
+# docker network create vexme
+networks:
+  vexme:
+    external:
+      name: vexme
+
+# networks:
+#   influx:
+#     driver: bridge
+
 services:
+
+  ##########################################
+  # Datastore
+  ##########################################
   influxdb:
-    build:
-      context: .
-      dockerfile: "influx_docker"
+    image: influxdb:1.8
+    restart: unless-stopped
+    # needs a network for a container to perform backups
+    networks:
+      - vexme
+    # determine if we need to expose influxdb to host or
+    # can keep in dodker network
+    # expose:
+    #   - "8088"
+    #   - "8086"
+    # following exposes ports to host
     ports:
       - "8086:8086"
+      - "8088:8088"
+    # need this so I can connect from host system
+    env_file:
+      - .env
     volumes:
-      - influx:/var/lib/inflxdb
+      - influx:/var/lib/influxdb
+
+  ##########################################
+  # Grafana for visualisatons
+  ##########################################
+  grafana:
+    image: grafana/grafana
+    restart: unless-stopped
+    networks:
+      - vexme
+    environment:
+      GF_SERVER_ROOT_URL: http://grafana/api/grafana
+    depends_on:
+      - influxdb
+      # - prometheus
+    expose:
+      - "3000"
+    # https://grafana.com/docs/installation/docker/#migration-from-a-previous-version-of-the-docker-container-to-5-1-or-later
+    # user: "104"
+    volumes:
+      - grafana-storage:/var/lib/grafana
+
+  ##########################################
+  # prometheus for kong and docker metrics
+  ##########################################
+  # prometheus:
+  #   image: prom/prometheus:latest
+  #   restart: unless-stopped
+  #   networks:
+  #     - vexme
+  #   ports:
+  #     - "9090:9090"
+  #       #command:
+  #       #- --config.file=./prometheus.yml
+  #   volumes:
+  #     # copy ./prometheus.yml to /tmp/prometheus.yml
+  #     - /home/mw/git/api/docker/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    # Need to have this in /etc/docker/daemon.json on host:
+    #   {
+    #     "metrics-addr" : "0.0.0.0:9323",
+    #     "experimental" : true
+    #   }
+
+  ##########################################
+  # API's
+  ##########################################
   auth-api:
     build:
       context: .
-      dockerfile: "auth_docker"
-    volumes:
-      - sqlite_db:/home/marcus/git/api/python
-    ports:
-     - "5001:5004"
+      dockerfile: "./auth_docker"
+    networks:
+      - vexme
+    depends_on:
+      - influxdb
+    expose:
+      - "5006"
+    # ports:
+    #   - "5001:5001"
   sensor-api:
     build:
       context: .
-      dockerfile: "sensor_docker"
-    ports:
-      - "5002:5005"
-   door-api:
-    build: "./door_docker"
-    ports:
-      - "5003:5006"
+      dockerfile: "./sensor_docker"
+    networks:
+      - vexme
+    restart: unless-stopped
+    depends_on:
+      - influxdb
+    expose:
+      - "5007"
+  tank-ingress-api:
+    build:
+      context: .
+      dockerfile: "./tankingress_docker"
+    networks:
+      - vexme
+    restart: unless-stopped
+    depends_on:
+      - influxdb
+    expose:
+      - "5008"
+
+
+#  door-api:
+#    build:
+#      context: .
+#      dockerfile: "./door_docker"
+#    restart: unless-stopped
+#    ports:
+#      - "5003:5003"
+
+  ##########################################
+  # alerts
+  #########################################
+
+  alerts:
+    build:
+      context: .
+      dockerfile: "./alerts_docker"
+    networks:
+      - vexme
+    depends_on:
+      - grafana
+
+
 volumes:
-  sqlite_db:
+  grafana-storage:
   influx:
+    external:
+      name: influx
+

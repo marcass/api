@@ -3,6 +3,6 @@ COPY sensor_req.txt .
 RUN pip install --upgrade pip --no-cache-dir -r sensor_req.txt
 COPY python .
 # https://stackoverflow.com/questions/43925487/how-to-run-gunicorn-on-docker
-#CMD ["gunicorn", "-w", "2", "-b", "127.0.0.1:5002", "sensor_views:app"]
+#CMD ["gunicorn", "-w", "2", "-b", "127.0.0.1:5003", "tanks_unauth:app"]
 #needs to listen on external interface
-CMD ["gunicorn", "-w", "2", "-b", "0.0.0.0:5007", "sensor_views:app"]
+CMD ["gunicorn", "-w", "2", "-b", "0.0.0.0:5008", "tanks_unauth:app"]

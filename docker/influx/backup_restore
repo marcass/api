@@ -1,0 +1,31 @@
+to backup and restore versions of influx db must match (what a nightmare)
+
+Steps to backup:
+1. https://www.grzegorowski.com/how-to-backup-and-restore-influxdb-which-runs-inside-docker-container/
+1. https://github.com/loomchild/volume-backup
+1. https://medium.com/@loomchild/backup-restore-docker-named-volumes-350397b8e362
+
+Steps to restore:
+1. ensure influx is running and listening on 8088:
+
+We need to have a common network (i think):
+docker network create -d bridge influx
+
+We need to set the environment variable for the bind address (see -e option)
+We need to make sure it is the latest (backup was made in influxdb version 1.7.2)
+We need to have our volume mounted to spinning disk (lots of writes)
+Following is an example of a container running influx that will receive a backup (be restored):
+
+docker run --network=vexme -p 8088:8088 -p 8086:8086 -e INFLUXDB_BIND_ADDRESS=":8088" -v influx:/var/lib/influxdb influxdb:latest
+
+An example of a Dockerfile that will set the restore up is this:
+
+FROM influxdb:latest
+RUN mkdir -p /backup   #this makes a dir to dump backup to (from local file system)
+COPY ./influx/* /backup/ #this copies the backup to the image
+CMD influxd restore -portable -host 172.18.0.2:8088 /backup/ #this is the command that will do the restore to the running influxdb container
+                                                              # change the ip to the docker inflxudb's ip address (find by docker inspect <influxdb containter id>)
+To build (in the directory contaiing the above Dockerfile):
+docker build -f ./influx_restore -t myinfluxdb:restore .
+
+docker run -rm --network=vexme <container id>

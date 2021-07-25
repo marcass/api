@@ -1,0 +1,5 @@
+FROM influxdb:latest
+RUN mkdir -p /backup
+WORKDIR /backup
+COPY influx_bak/* /backup/
+CMD influxd restore -portable -host 172.18.0.2:8088 /backup/ #this is the command that will do the restore to the running influxdb container
