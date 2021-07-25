@@ -25,7 +25,7 @@ def update_data_tanks():
     # content = request.get_json(silent=False)
     # sift lora crap
     if len(content) < 100:
-        return jsonify(sensors.write_data(content)), 200
+        return jsonify(sensors.sort_tank_data(content)), 200
     else:
         return jsonify({'message':'malformed string'}), 400
 
